@@ -1,0 +1,29 @@
+# Blender MTL File: 'Fan_Done2_Rigged.blend'
+# Material Count: 2
+
+newmtl Gitter_Ventilator
+Ns 101.960784
+Ka 1.000000 1.000000 1.000000
+Kd 0.372973 0.372973 0.372973
+Ks 0.581081 0.581081 0.581081
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd textures\Gitter col.png
+map_Bump textures\\grid_Nor.png
+map_d textures\\grid_Col.png
+refl textures\\REF 1.jpg
+
+newmtl Ventilator_wei
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.525520 0.525520 0.525520
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Bump textures\\Fan_Nor.png
+map_Kd textures\\Fan_Col.png
+refl textures\\REF 1.jpg
