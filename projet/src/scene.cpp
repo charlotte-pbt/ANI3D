@@ -33,35 +33,31 @@ void scene_structure::initialize()
 	fan_base.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
 	fan_base.model.translation = { 2,0,constraint.ground_z};
 	fan_base.model.scaling = 0.3f;
-	fan_base.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 1.5);
+	fan_base.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
 	mesh fan_base_head_mesh = mesh_load_file_obj("assets/fan_base_head.obj");
 	fan_base_head.initialize_data_on_gpu(fan_base_head_mesh);
 	fan_base_head.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
-	fan_base_head.model.translation = { 2,0,constraint.ground_z };
 	fan_base_head.model.scaling = 0.3f;
-	fan_base_head.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 1.5);
+	fan_base_head.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
 	mesh fan_grid_mesh = mesh_load_file_obj("assets/fan_grid.obj");
 	fan_grid.initialize_data_on_gpu(fan_grid_mesh);
 	fan_grid.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/grid_col2.png");
 	fan_grid.shader.load(project::path + "shaders/mesh_transparency/mesh_transparency.vert.glsl", project::path + "shaders/mesh_transparency/mesh_transparency.frag.glsl");
 	fan_grid.material.phong = { 0.4f, 0.6f, 0, 1 };
-	fan_grid.model.translation = { 2,0,constraint.ground_z };
 	fan_grid.model.scaling = 0.3f;
-	fan_grid.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 1.5);
+	fan_grid.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
 	mesh fan_propellers_mesh = mesh_load_file_obj("assets/fan_propellers.obj");
 	fan_propellers.initialize_data_on_gpu(fan_propellers_mesh);
 	fan_propellers.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
-	fan_propellers.model.translation = { 2,0,constraint.ground_z };
 	fan_propellers.model.scaling = 0.3f;
-	fan_propellers.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 1.5);
 
 	hierarchy_fan.add(fan_base, "fan_base");
-	hierarchy_fan.add(fan_base_head, "fan_base_head", "fan_base");
-	hierarchy_fan.add(fan_grid, "fan_grid", "fan_base_head");
-	hierarchy_fan.add(fan_propellers, "fan_propellers", "fan_base_head");
+	hierarchy_fan.add(fan_base_head, "fan_base_head", "fan_base",  { 2.1f,0,1.8f });
+	hierarchy_fan.add(fan_grid, "fan_grid", "fan_base_head", {-0.2f, 0, 0.35f});
+	hierarchy_fan.add(fan_propellers, "fan_propellers", "fan_base_head",  {-0.2f, 0, 0.35f});
 
 	cloth_texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/cloth.jpg");
 	initialize_cloths();
@@ -108,6 +104,11 @@ void scene_structure::display_frame()
 		sphere_fixed_position.model.translation = c.second.position;
 		draw(sphere_fixed_position, environment);
 	}
+
+	timer.update();
+
+	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 5 * timer.t);
+	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-1 * timer.t));
 
 	hierarchy_fan.update_local_to_global_coordinates();
 	draw(hierarchy_fan, environment);
