@@ -107,8 +107,24 @@ void scene_structure::display_frame()
 
 	timer.update();
 
-	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 5 * timer.t);
-	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-1 * timer.t));
+	int speed = 5;
+	if (gui.speed1)
+		speed = 5;
+	else if (gui.speed2)
+		speed = 7;
+	else if (gui.speed3)
+		speed = 9;
+
+	float rotation_speed = 0.5f;
+	if (gui.rotation_speed1)
+		rotation_speed = 0.5f;
+	else if (gui.rotation_speed2)
+		rotation_speed = 1.2f;
+	else if (gui.rotation_speed3)
+		rotation_speed = 1.8f;
+
+	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, speed * timer.t);
+	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-rotation_speed * timer.t));
 
 	hierarchy_fan.update_local_to_global_coordinates();
 	draw(hierarchy_fan, environment);
@@ -179,6 +195,54 @@ void scene_structure::display_gui()
 	ImGui::SliderFloat("Wind magnitude", &parameters.wind.magnitude, 0, 60, "%.3f", 2.0f);
 	ImGui::SliderFloat("Damping", &parameters.mu, 1.0f, 30.0f);
 	ImGui::SliderFloat("Mass", &parameters.mass_total, 0.2f, 5.0f, "%.3f", 2.0f);
+
+	ImGui::Spacing(); ImGui::Spacing();
+
+	ImGui::Text("Speed");
+	ImGui::Checkbox("1", &gui.speed1);
+	if (gui.speed1)
+    {
+        gui.speed2 = false;
+        gui.speed3 = false;
+    }
+	ImGui::SameLine();
+    ImGui::Checkbox("2", &gui.speed2);
+	if (gui.speed2)
+    {
+        gui.speed1 = false;
+        gui.speed3 = false;
+    }
+	ImGui::SameLine();
+    ImGui::Checkbox("3", &gui.speed3);
+	if (gui.speed3)
+    {
+        gui.speed1 = false;
+        gui.speed2 = false;
+    }
+    
+	ImGui::Spacing(); ImGui::Spacing();
+
+	ImGui::Text("Rotation Speed");
+	ImGui::Checkbox("1 ", &gui.rotation_speed1);
+	if (gui.rotation_speed1)
+    {
+        gui.rotation_speed2 = false;
+        gui.rotation_speed3 = false;
+    }
+	ImGui::SameLine();
+    ImGui::Checkbox("2 ", &gui.rotation_speed2);
+	if (gui.rotation_speed2)
+    {
+        gui.rotation_speed1 = false;
+        gui.rotation_speed3 = false;
+    }
+	ImGui::SameLine();
+    ImGui::Checkbox("3 ", &gui.rotation_speed3);
+	if (gui.rotation_speed3)
+    {
+        gui.rotation_speed1 = false;
+        gui.rotation_speed2 = false;
+    }
 
 	ImGui::Spacing(); ImGui::Spacing();
 

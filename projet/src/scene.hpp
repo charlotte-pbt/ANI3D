@@ -14,6 +14,14 @@ struct gui_parameters {
 	bool display_frame = true;
 	bool display_wireframe = false;
 	int N_sample_edge = 20;  // number of samples of the cloth (the total number of vertices is N_sample_edge^2)
+
+	bool speed1 = true;
+	bool speed2 = false;
+	bool speed3 = false;
+
+	bool rotation_speed1 = true;
+	bool rotation_speed2 = false;
+	bool rotation_speed3 = false;
 };
 
 // The structure of the custom scene
