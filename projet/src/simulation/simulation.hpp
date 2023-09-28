@@ -15,7 +15,9 @@ struct simulation_parameters
     //  Wind magnitude and direction
     struct {
         float magnitude = 0.0f;
-        cgp::vec3 direction = { 0,-1,0 };
+        cgp::vec3 initial_direction = { -1,0,0 };
+        cgp::vec3 direction = { -1,0,0 };
+        cgp::vec3 source = {2, 0, 0};
     } wind;
 };
 

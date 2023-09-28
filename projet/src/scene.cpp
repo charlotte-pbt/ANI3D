@@ -1,9 +1,6 @@
 #include "scene.hpp"
 
-
 using namespace cgp;
-
-
 
 
 void scene_structure::initialize()
@@ -19,15 +16,16 @@ void scene_structure::initialize()
 	obstacle_floor.material.texture_settings.two_sided = true;
 
 	obstacle_sphere.initialize_data_on_gpu(mesh_primitive_sphere());
-	obstacle_sphere.model.translation = constraint.sphere.center;
-	obstacle_sphere.model.scaling = constraint.sphere.radius;
+	obstacle_sphere.model.translation = { 2,0,constraint.ground_z};
+	obstacle_sphere.model.scaling = 1;
 	obstacle_sphere.material.color = { 1,0,0 };
 
 	sphere_fixed_position.initialize_data_on_gpu(mesh_primitive_sphere());
 	sphere_fixed_position.model.scaling = 0.02f;
 	sphere_fixed_position.material.color = { 0,0,1 };
 
-	// mesh_load_file_obj: read a .obj file and return a mesh structure
+	// Load fan obj :
+
 	mesh fan_base_mesh = mesh_load_file_obj("assets/fan_base.obj");
 	fan_base.initialize_data_on_gpu(fan_base_mesh);
 	fan_base.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
@@ -59,6 +57,8 @@ void scene_structure::initialize()
 	hierarchy_fan.add(fan_grid, "fan_grid", "fan_base_head", {-0.2f, 0, 0.35f});
 	hierarchy_fan.add(fan_propellers, "fan_propellers", "fan_base_head",  {-0.2f, 0, 0.35f});
 
+	// Cloths
+
 	cloth_texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/cloth.jpg");
 	initialize_cloths();
 }
@@ -80,8 +80,8 @@ void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cl
 
 void scene_structure::initialize_cloths()
 {
-	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-5,-5,5}, {-5,0,5}, {0,0,5}, {0,-5,5} });
-	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-5,5,5}, {-5,0,5}, {0,0,5}, {0,5,5} });
+	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-1,-1,1}, {-1,0,1}, {0,0,1}, {0,-1,1} });
+	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {4,-1,1}, {4,0,1}, {0,0,1}, {0,-1,1} });
 }
 
 
@@ -107,14 +107,25 @@ void scene_structure::display_frame()
 
 	timer.update();
 
+	// Update fan and wind speed in function of the GUI
 	int speed = 5;
 	if (gui.speed1)
+	{
 		speed = 5;
+		parameters.wind.magnitude = 8;
+	}
 	else if (gui.speed2)
+	{
 		speed = 7;
+		parameters.wind.magnitude = 16;
+	}
 	else if (gui.speed3)
+	{
 		speed = 9;
+		parameters.wind.magnitude = 25;
+	}
 
+	// Update rotation fan speed in function of the GUI
 	float rotation_speed = 0.5f;
 	if (gui.rotation_speed1)
 		rotation_speed = 0.5f;
@@ -123,8 +134,14 @@ void scene_structure::display_frame()
 	else if (gui.rotation_speed3)
 		rotation_speed = 1.8f;
 
+	// Fan rotation
 	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, speed * timer.t);
 	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-rotation_speed * timer.t));
+
+	// Update the direction of the wind with de rotation of the fan
+	mat4 objectTransform = hierarchy_fan["fan_base_head"].transform_local.matrix();
+	auto tmp = objectTransform * vec4(parameters.wind.initial_direction , 0.0f);
+	parameters.wind.direction = normalize(vec3(tmp[0], tmp[1], tmp[2]));
 
 	hierarchy_fan.update_local_to_global_coordinates();
 	draw(hierarchy_fan, environment);
@@ -167,7 +184,7 @@ void scene_structure::display_frame()
 	cloth2.update_normal();        // compute the new normals
 	cloth_drawable2.update(cloth2); // update the positions on the GPU
 
-	// Display the cloth
+	// Display the cloths
 	draw(cloth_drawable, environment);
 	if (gui.display_wireframe)
 		draw_wireframe(cloth_drawable, environment);
@@ -192,7 +209,6 @@ void scene_structure::display_gui()
 	ImGui::Text("Simulation parameters");
 	ImGui::SliderFloat("Time step", &parameters.dt, 0.0001f, 0.02f, "%.4f", 2.0f);
 	ImGui::SliderFloat("Stiffness", &parameters.K, 0.2f, 50.0f, "%.3f", 2.0f);
-	ImGui::SliderFloat("Wind magnitude", &parameters.wind.magnitude, 0, 60, "%.3f", 2.0f);
 	ImGui::SliderFloat("Damping", &parameters.mu, 1.0f, 30.0f);
 	ImGui::SliderFloat("Mass", &parameters.mass_total, 0.2f, 5.0f, "%.3f", 2.0f);
 

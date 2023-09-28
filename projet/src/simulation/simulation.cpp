@@ -91,10 +91,22 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
     for (int ku = 0; ku < N; ++ku) {
         for (int kv = 0; kv < N; ++kv) {
 
-            float v = dot(parameters.wind.direction, cloth.normal(ku, kv));
+            // Calcul vector from wind source to vertex
+            vec3 windToVertex = normalize(cloth.position(ku, kv) - parameters.wind.source);
+            
+            // Calcul scalaire product between windToVertex and wind direction
+            float dotProduct = dot(windToVertex, parameters.wind.direction);
+            float angleInRadians = acos(dotProduct);
+            float angleInDegrees = angleInRadians * (180.0f / Pi);
 
-            force(ku, kv) += v * cloth.normal(ku, kv) * parameters.wind.magnitude/100;
-
+            float v = dot(windToVertex, cloth.normal(ku, kv));
+            
+            // Verify if it is in the wind direction 
+            if (angleInDegrees <= 30.0f) {
+               
+                vec3 windForce = v * cloth.normal(ku, kv) * parameters.wind.magnitude/100;
+                force(ku, kv) += windForce;
+            }
         }
     }
 
