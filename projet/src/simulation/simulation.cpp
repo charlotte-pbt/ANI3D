@@ -29,9 +29,9 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
 
     // Retrieve simulation parameter
     //  The default value of the simulation parameters are defined in simulation.hpp
-    float const K = parameters.K;              // spring stifness
-    float const m = parameters.mass_total / N_total; // mass of a particle
-    float const mu = parameters.mu;            // damping/friction coefficient
+    float const K = cloth.K;              // spring stifness
+    float const m = cloth.mass_total / N_total; // mass of a particle
+    float const mu = cloth.mu;            // damping/friction coefficient
     float const	L0_x = cloth.lenght_x / (N_x - 1.0f);        // rest length between two direct neighboring particle
     float const	L0_y = cloth.lenght_y / (N_y - 1.0f);        // rest length between two direct neighboring particle
 
@@ -119,7 +119,7 @@ void simulation_numerical_integration(cloth_structure& cloth, simulation_paramet
     int const N_x = cloth.N_samples_x();
     int const N_y = cloth.N_samples_y();
     int const N_total = cloth.position.size();
-    float const m = parameters.mass_total/ static_cast<float>(N_total);
+    float const m = cloth.mass_total/ static_cast<float>(N_total);
 
     for (int ku = 0; ku < N_x; ++ku) {
         for (int kv = 0; kv < N_y; ++kv) {

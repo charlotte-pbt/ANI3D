@@ -18,10 +18,18 @@ struct cloth_structure
     // Also stores the triangle connectivity used to update the normals
     cgp::numarray<cgp::uint3> triangle_connectivity;
 
+    // The size of the cloth
     int lenght_x;
     int lenght_y;
 
+    // The texture of the cloth
     cgp::opengl_texture_image_structure texture;
+
+    // Simulation parameters
+    float mass_total = 0.5f; // total mass of the cloth
+    float K = 5.0f;         // stiffness parameter
+    float mu = 15.0f;        // damping parameter
+    
     
     void initialize(int N_samples_edge, std::vector<vec3> pos, int x_lenght, int y_lenght);  // Initialize a square flat cloth
     void update_normal();       // Call this function every time the cloth is updated before its draw
