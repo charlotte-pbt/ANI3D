@@ -68,8 +68,6 @@ struct scene_structure : scene_inputs_generic {
 
 	// Helper variables
 	bool simulation_running = true;   // Boolean indicating if the simulation should be computed
-	cgp::opengl_texture_image_structure cloth_texture;             // Storage of the texture ID used for the cloth
-
 
 
 	// ****************************** //
@@ -82,7 +80,7 @@ struct scene_structure : scene_inputs_generic {
 
 
 	void initialize_cloths();
-	void initialize_cloth(int N_sample, cloth_structure &cloth, cloth_structure_drawable &cloth_drawable, constraint_structure &constraint, std::vector<vec3> pos); // Recompute the cloth from scratch
+	void initialize_cloth(int N_sample, cloth_structure &cloth, cloth_structure_drawable &cloth_drawable, constraint_structure &constraint, std::vector<vec3> pos, int x_lenght, int y_lenght); // Recompute the cloth from scratch
 
 	void mouse_move_event();
 	void mouse_click_event();

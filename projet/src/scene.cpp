@@ -58,17 +58,15 @@ void scene_structure::initialize()
 	hierarchy_fan.add(fan_propellers, "fan_propellers", "fan_base_head",  {-0.2f, 0, 0.35f});
 
 	// Cloths
-
-	cloth_texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/cloth.jpg");
 	initialize_cloths();
 }
 
 // Compute a new cloth in its initial position (can be called multiple times)
-void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cloth_structure_drawable &cloth_drawable1, constraint_structure &constraint1, std::vector<vec3> pos)
+void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cloth_structure_drawable &cloth_drawable1, constraint_structure &constraint1, std::vector<vec3> pos, int x_lenght, int y_lenght)
 {
-	cloth1.initialize(N_sample, pos);
-	cloth_drawable1.initialize(N_sample);
-	cloth_drawable1.drawable.texture = cloth_texture;
+	cloth1.initialize(N_sample, pos, x_lenght, y_lenght);
+	cloth_drawable1.initialize(N_sample, x_lenght, y_lenght);
+	cloth_drawable1.drawable.texture = cloth1.texture;
 	cloth_drawable1.drawable.material.texture_settings.two_sided = true;
 
 	constraint1.fixed_sample.clear();
@@ -80,8 +78,10 @@ void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cl
 
 void scene_structure::initialize_cloths()
 {
-	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-1,-1,1}, {-1,0,1}, {0,0,1}, {0,-1,1} });
-	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {4,-1,1}, {4,0,1}, {0,0,1}, {0,-1,1} });
+	cloth.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-5,-5,5}, {-5,0,5}, {0,0,5}, {0,-5,5} }, 5, 5);
+	cloth2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-5,6,5}, {-5,1,5}, {-3,1,5}, {-3,6,5} }, 2, 5);
 }
 
 
@@ -108,21 +108,26 @@ void scene_structure::display_frame()
 	timer.update();
 
 	// Update fan and wind speed in function of the GUI
-	int speed = 5;
+	int speed = 0;
 	if (gui.speed1)
 	{
 		speed = 5;
-		parameters.wind.magnitude = 8;
+		parameters.wind.magnitude = 3;
 	}
 	else if (gui.speed2)
 	{
 		speed = 7;
-		parameters.wind.magnitude = 16;
+		parameters.wind.magnitude = 11;
 	}
 	else if (gui.speed3)
 	{
 		speed = 9;
-		parameters.wind.magnitude = 25;
+		parameters.wind.magnitude = 20;
+	}
+	else
+	{
+		speed = 0;
+		parameters.wind.magnitude = 0;
 	}
 
 	// Update rotation fan speed in function of the GUI
@@ -133,6 +138,8 @@ void scene_structure::display_frame()
 		rotation_speed = 1.2f;
 	else if (gui.rotation_speed3)
 		rotation_speed = 1.8f;
+	else
+		rotation_speed = 0.0f;
 
 	// Fan rotation
 	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, speed * timer.t);
@@ -148,7 +155,7 @@ void scene_structure::display_frame()
 	
 	// Simulation of the cloth
 	// ***************************************** //
-	int const N_step = 1; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
+	int const N_step = 5; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
 	for (int k_step = 0; simulation_running == true && k_step < N_step; ++k_step)
 	{
 		// Update the forces on each particle

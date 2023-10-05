@@ -3,8 +3,11 @@
 using namespace cgp;
 
 
-void cloth_structure::initialize(int N_samples_edge_arg, std::vector<vec3> pos)
+void cloth_structure::initialize(int N_samples_edge_arg, std::vector<vec3> pos, int x_lenght, int y_lenght)
 {
+    lenght_x = x_lenght;
+    lenght_y = y_lenght;
+
     assert_cgp(N_samples_edge_arg > 3, "N_samples_edge=" + str(N_samples_edge_arg) + " should be > 3");
 
     position.clear();
@@ -29,16 +32,21 @@ void cloth_structure::update_normal()
     normal_per_vertex(position.data, triangle_connectivity, normal.data);
 }
 
-int cloth_structure::N_samples() const
+int cloth_structure::N_samples_x() const
 {
     return position.dimension.x;
 }
 
-
-
-void cloth_structure_drawable::initialize(int N_samples_edge)
+int cloth_structure::N_samples_y() const
 {
-    mesh const cloth_mesh = mesh_primitive_grid({-5,-5,5}, {-5,0,5}, {0,0,5}, {0,-5,5}, N_samples_edge, N_samples_edge);
+    return position.dimension.y;
+}
+
+
+
+void cloth_structure_drawable::initialize(int N_samples_edge, int x_length, int y_length)
+{
+    mesh const cloth_mesh = mesh_primitive_grid({x_length,y_length,0}, {x_length,0,0}, {0,0,0}, {0,y_length,0}, N_samples_edge, N_samples_edge);
 
     drawable.clear();
     drawable.initialize_data_on_gpu(cloth_mesh);

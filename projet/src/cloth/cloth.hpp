@@ -18,10 +18,15 @@ struct cloth_structure
     // Also stores the triangle connectivity used to update the normals
     cgp::numarray<cgp::uint3> triangle_connectivity;
 
+    int lenght_x;
+    int lenght_y;
+
+    cgp::opengl_texture_image_structure texture;
     
-    void initialize(int N_samples_edge, std::vector<vec3> pos);  // Initialize a square flat cloth
+    void initialize(int N_samples_edge, std::vector<vec3> pos, int x_lenght, int y_lenght);  // Initialize a square flat cloth
     void update_normal();       // Call this function every time the cloth is updated before its draw
-    int N_samples() const;      // Number of vertex along one dimension of the grid
+    int N_samples_x() const;      // Number of vertex along x dimension of the grid
+    int N_samples_y() const;      // Number of vertex along y dimension of the grid
 };
 
 
@@ -31,7 +36,7 @@ struct cloth_structure_drawable
 {
     cgp::mesh_drawable drawable;
 
-    void initialize(int N_sample_edge);
+    void initialize(int N_sample_edge, int x_length, int y_length);
     void update(cloth_structure const& cloth);
 };
 
