@@ -29,7 +29,7 @@ void scene_structure::initialize()
 	mesh fan_base_mesh = mesh_load_file_obj("assets/fan_base.obj");
 	fan_base.initialize_data_on_gpu(fan_base_mesh);
 	fan_base.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
-	fan_base.model.translation = { 2,0,constraint.ground_z};
+	fan_base.model.translation = { 0,0,constraint.ground_z};
 	fan_base.model.scaling = 0.3f;
 	fan_base.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
@@ -53,7 +53,7 @@ void scene_structure::initialize()
 	fan_propellers.model.scaling = 0.3f;
 
 	hierarchy_fan.add(fan_base, "fan_base");
-	hierarchy_fan.add(fan_base_head, "fan_base_head", "fan_base",  { 2.1f,0,1.8f });
+	hierarchy_fan.add(fan_base_head, "fan_base_head", "fan_base",  { 0,0,1.8f });
 	hierarchy_fan.add(fan_grid, "fan_grid", "fan_base_head", {-0.2f, 0, 0.35f});
 	hierarchy_fan.add(fan_propellers, "fan_propellers", "fan_base_head",  {-0.2f, 0, 0.35f});
 
@@ -152,14 +152,20 @@ void scene_structure::display_frame()
 	else
 		rotation_speed = 0.0f;
 
+	// Fan position
+	hierarchy_fan["fan_base"].transform_local.translation = { hierarchy_fan_position.first, hierarchy_fan_position.second, constraint.ground_z };
+
+	// Update the wind source position
+	parameters.wind.source = hierarchy_fan["fan_base"].transform_local.translation;
+	parameters.wind.source.z = parameters.wind.initial_direction.z;
+
 	// Fan rotation
 	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, speed * timer.t);
 	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-rotation_speed * timer.t));
 
 	// Update the direction of the wind with de rotation of the fan
-	mat4 objectTransform = hierarchy_fan["fan_base_head"].transform_local.matrix();
-	auto tmp = objectTransform * vec4(parameters.wind.initial_direction , 0.0f);
-	parameters.wind.direction = normalize(vec3(tmp[0], tmp[1], tmp[2]));
+	mat3 objectTransform = hierarchy_fan["fan_base_head"].transform_local.rotation.matrix();
+	parameters.wind.direction = normalize(objectTransform * parameters.wind.initial_direction);
 
 	hierarchy_fan.update_local_to_global_coordinates();
 	draw(hierarchy_fan, environment);
@@ -255,6 +261,9 @@ void scene_structure::display_gui()
 
 	ImGui::Spacing(); ImGui::Spacing();
 
+	ImGui::Text("Fan parameters");
+	ImGui::SliderFloat("x", &hierarchy_fan_position.first, -9, 9);
+	ImGui::SliderFloat("y", &hierarchy_fan_position.second, -9, 9);
 	ImGui::Text("Wind force");
 	ImGui::Checkbox("1", &gui.speed1);
 	if (gui.speed1)

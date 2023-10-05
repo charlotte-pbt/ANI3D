@@ -96,9 +96,11 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             // Calcul vector from wind source to vertex
             vec3 windToVertex = normalize(cloth.position(ku, kv) - parameters.wind.source);
             
+            auto length = [](vec3 const& v) { return sqrt(v.x * v.x + v.y * v.y + v.z * v.z); };
+
             // Calcul scalaire product between windToVertex and wind direction
             float dotProduct = dot(windToVertex, parameters.wind.direction);
-            float angleInRadians = acos(dotProduct);
+            float angleInRadians = acos(dotProduct / (length(windToVertex) * length(parameters.wind.direction)));
             float angleInDegrees = angleInRadians * (180.0f / Pi);
 
             float v = dot(windToVertex, cloth.normal(ku, kv));
@@ -109,8 +111,8 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             // Calcul new wind mignitude with distance
             float newMagnitude = parameters.wind.magnitude / (distance * distance);
             
-            // Verify if it is in the wind direction 
-            if (angleInDegrees <= 40.0f) {
+            // Verify if it is in the wind direction cone
+            if (cgp::abs(angleInDegrees) <= 40.0f) {
                 vec3 windForce = v * cloth.normal(ku, kv) * newMagnitude;
                 force(ku, kv) += windForce;
             }
