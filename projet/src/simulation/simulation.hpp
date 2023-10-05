@@ -23,7 +23,7 @@ struct simulation_parameters
 void simulation_compute_force(cloth_structure& cloth, simulation_parameters const& parameters);
 
 // Perform 1 step of a semi-implicit integration with time step dt
-void simulation_numerical_integration(cloth_structure& cloth, simulation_parameters const& parameters, float dt);
+void simulation_numerical_integration(cloth_structure& cloth, float dt);
 
 // Apply the constraints (fixed position, obstacles) on the cloth position and velocity
 void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint);

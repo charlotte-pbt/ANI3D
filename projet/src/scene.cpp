@@ -79,9 +79,16 @@ void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cl
 void scene_structure::initialize_cloths()
 {
 	cloth.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
-	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-5,-5,5}, {-5,0,5}, {0,0,5}, {0,-5,5} }, 5, 5);
+	cloth.mass_total = 0.8f;
+	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-7,-2,6}, {-7,-7,6}, {-7,-7,1.2f}, {-7,-2,1.2f} }, 5, 5);
+
 	cloth2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
-	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-5,6,5}, {-5,1,5}, {-3,1,5}, {-3,6,5} }, 2, 5);
+	cloth2.mass_total = 0.5f;
+	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-7,7,6}, {-7,2,6}, {-7,2,4.2}, {-7,7,4.2} }, 2, 5);
+
+	cloth3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	cloth3.mass_total = 0.3f;
+	initialize_cloth(gui.N_sample_edge, cloth3, cloth_drawable3, constraint3, { {-7,1,6}, {-7,-1,6}, {-7,-1,3.2}, {-7,1,3.2} }, 3, 2);
 }
 
 
@@ -112,17 +119,17 @@ void scene_structure::display_frame()
 	if (gui.speed1)
 	{
 		speed = 5;
-		parameters.wind.magnitude = 3;
+		parameters.wind.magnitude = 1;
 	}
 	else if (gui.speed2)
 	{
 		speed = 7;
-		parameters.wind.magnitude = 11;
+		parameters.wind.magnitude = 3;
 	}
 	else if (gui.speed3)
 	{
 		speed = 9;
-		parameters.wind.magnitude = 20;
+		parameters.wind.magnitude = 5;
 	}
 	else
 	{
@@ -161,19 +168,23 @@ void scene_structure::display_frame()
 		// Update the forces on each particle
 		simulation_compute_force(cloth, parameters);
 		simulation_compute_force(cloth2, parameters);
+		simulation_compute_force(cloth3, parameters);
 
 		// One step of numerical integration
-		simulation_numerical_integration(cloth, parameters, parameters.dt);
-		simulation_numerical_integration(cloth2, parameters, parameters.dt);
+		simulation_numerical_integration(cloth, parameters.dt);
+		simulation_numerical_integration(cloth2, parameters.dt);
+		simulation_numerical_integration(cloth3, parameters.dt);
 
 		// Apply the positional (and velocity) constraints
 		simulation_apply_constraints(cloth, constraint);
 		simulation_apply_constraints(cloth2, constraint2);
+		simulation_apply_constraints(cloth3, constraint3);
 
 		// Check if the simulation has not diverged - otherwise stop it
 		bool const simulation_diverged = simulation_detect_divergence(cloth);
 		bool const simulation_diverged2 = simulation_detect_divergence(cloth2);
-		if (simulation_diverged || simulation_diverged2) {
+		bool const simulation_diverged3 = simulation_detect_divergence(cloth3);
+		if (simulation_diverged || simulation_diverged2 || simulation_diverged3) {
 			std::cout << "\n *** Simulation has diverged ***" << std::endl;
 			std::cout << " > The simulation is stoped" << std::endl;
 			simulation_running = false;
@@ -191,6 +202,9 @@ void scene_structure::display_frame()
 	cloth2.update_normal();        // compute the new normals
 	cloth_drawable2.update(cloth2); // update the positions on the GPU
 
+	cloth3.update_normal();        // compute the new normals
+	cloth_drawable3.update(cloth3); // update the positions on the GPU
+
 	// Display the cloths
 	draw(cloth_drawable, environment);
 	if (gui.display_wireframe)
@@ -199,6 +213,10 @@ void scene_structure::display_frame()
 	draw(cloth_drawable2, environment);
 	if (gui.display_wireframe)
 		draw_wireframe(cloth_drawable2, environment);
+
+	draw(cloth_drawable3, environment);
+	if (gui.display_wireframe)
+		draw_wireframe(cloth_drawable3, environment);
 
 }
 

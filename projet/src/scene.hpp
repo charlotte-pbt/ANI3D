@@ -56,15 +56,21 @@ struct scene_structure : scene_inputs_generic {
 	cgp::hierarchy_mesh_drawable hierarchy_fan;
 
 	// Cloth related structures
+	simulation_parameters parameters;          // Stores the parameters of the simulation (time step, wind settings)
+
 	cloth_structure cloth;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
 	cloth_structure_drawable cloth_drawable;   // Helper structure to display the cloth as a mesh
-	simulation_parameters parameters;          // Stores the parameters of the simulation (stiffness, mass, damping, time step, etc)
 	constraint_structure constraint;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
 
 	// Cloth 2
 	cloth_structure cloth2;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
 	cloth_structure_drawable cloth_drawable2;   // Helper structure to display the cloth as a mesh
 	constraint_structure constraint2;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
+
+	// Cloth 3
+	cloth_structure cloth3;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
+	cloth_structure_drawable cloth_drawable3;   // Helper structure to display the cloth as a mesh
+	constraint_structure constraint3;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
 
 	// Helper variables
 	bool simulation_running = true;   // Boolean indicating if the simulation should be computed

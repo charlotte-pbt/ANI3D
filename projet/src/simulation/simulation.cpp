@@ -114,7 +114,7 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
 
 }
 
-void simulation_numerical_integration(cloth_structure& cloth, simulation_parameters const& parameters, float dt)
+void simulation_numerical_integration(cloth_structure& cloth, float dt)
 {
     int const N_x = cloth.N_samples_x();
     int const N_y = cloth.N_samples_y();
