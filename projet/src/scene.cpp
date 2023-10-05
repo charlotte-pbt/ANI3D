@@ -86,9 +86,13 @@ void scene_structure::initialize_cloths()
 	cloth2.mass_total = 0.5f;
 	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-7,7,6}, {-7,2,6}, {-7,2,4.2}, {-7,7,4.2} }, 2, 5);
 
-	cloth3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	cloth3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
 	cloth3.mass_total = 0.3f;
 	initialize_cloth(gui.N_sample_edge, cloth3, cloth_drawable3, constraint3, { {-7,1,6}, {-7,-1,6}, {-7,-1,3.2}, {-7,1,3.2} }, 3, 2);
+
+	cloth4.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	cloth4.mass_total = 0.5f;
+	initialize_cloth(gui.N_sample_edge, cloth4, cloth_drawable4, constraint4, { {-1.5f,-3,6}, {-1.5f,-5,6}, {-1.5f,-5,1.2}, {-1.5f,-3,1.2} }, 5, 2);
 }
 
 
@@ -169,23 +173,27 @@ void scene_structure::display_frame()
 		simulation_compute_force(cloth, parameters);
 		simulation_compute_force(cloth2, parameters);
 		simulation_compute_force(cloth3, parameters);
+		simulation_compute_force(cloth4, parameters);
 
 		// One step of numerical integration
 		simulation_numerical_integration(cloth, parameters.dt);
 		simulation_numerical_integration(cloth2, parameters.dt);
 		simulation_numerical_integration(cloth3, parameters.dt);
+		simulation_numerical_integration(cloth4, parameters.dt);
 
 		// Apply the positional (and velocity) constraints
 		simulation_apply_constraints(cloth, constraint);
 		simulation_apply_constraints(cloth2, constraint2);
 		simulation_apply_constraints(cloth3, constraint3);
+		simulation_apply_constraints(cloth4, constraint4);
 
 		// Check if the simulation has not diverged - otherwise stop it
 		bool const simulation_diverged = simulation_detect_divergence(cloth);
 		bool const simulation_diverged2 = simulation_detect_divergence(cloth2);
 		bool const simulation_diverged3 = simulation_detect_divergence(cloth3);
-		if (simulation_diverged || simulation_diverged2 || simulation_diverged3) {
-			std::cout << "\n *** Simulation has diverged ***" << std::endl;
+		bool const simulation_diverged4 = simulation_detect_divergence(cloth4);
+		if (simulation_diverged || simulation_diverged2 || simulation_diverged3 || simulation_diverged4) {
+			std::cout << "\n *** Simulation has diverged for ***" << std::endl;
 			std::cout << " > The simulation is stoped" << std::endl;
 			simulation_running = false;
 		}
@@ -205,6 +213,9 @@ void scene_structure::display_frame()
 	cloth3.update_normal();        // compute the new normals
 	cloth_drawable3.update(cloth3); // update the positions on the GPU
 
+	cloth4.update_normal();        // compute the new normals
+	cloth_drawable4.update(cloth4); // update the positions on the GPU
+
 	// Display the cloths
 	draw(cloth_drawable, environment);
 	if (gui.display_wireframe)
@@ -218,6 +229,9 @@ void scene_structure::display_frame()
 	if (gui.display_wireframe)
 		draw_wireframe(cloth_drawable3, environment);
 
+	draw(cloth_drawable4, environment);
+	if (gui.display_wireframe)
+		draw_wireframe(cloth_drawable4, environment);
 }
 
 void scene_structure::display_gui()

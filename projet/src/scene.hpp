@@ -72,6 +72,11 @@ struct scene_structure : scene_inputs_generic {
 	cloth_structure_drawable cloth_drawable3;   // Helper structure to display the cloth as a mesh
 	constraint_structure constraint3;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
 
+	// Cloth 4
+	cloth_structure cloth4;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
+	cloth_structure_drawable cloth_drawable4;   // Helper structure to display the cloth as a mesh
+	constraint_structure constraint4;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
+
 	// Helper variables
 	bool simulation_running = true;   // Boolean indicating if the simulation should be computed
 

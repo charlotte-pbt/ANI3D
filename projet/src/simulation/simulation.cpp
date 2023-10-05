@@ -102,11 +102,16 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             float angleInDegrees = angleInRadians * (180.0f / Pi);
 
             float v = dot(windToVertex, cloth.normal(ku, kv));
+
+            // Calcul distance between wind source and vertex
+            float distance = norm(cloth.position(ku, kv) - parameters.wind.source);
+
+            // Calcul new wind mignitude with distance
+            float newMagnitude = parameters.wind.magnitude / (distance * distance);
             
             // Verify if it is in the wind direction 
-            if (angleInDegrees <= 30.0f) {
-               
-                vec3 windForce = v * cloth.normal(ku, kv) * parameters.wind.magnitude/100;
+            if (angleInDegrees <= 40.0f) {
+                vec3 windForce = v * cloth.normal(ku, kv) * newMagnitude;
                 force(ku, kv) += windForce;
             }
         }
