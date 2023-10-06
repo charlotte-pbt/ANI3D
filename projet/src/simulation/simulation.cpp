@@ -103,7 +103,7 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             float angleInRadians = acos(dotProduct / (length(windToVertex) * length(parameters.wind.direction)));
             float angleInDegrees = angleInRadians * (180.0f / Pi);
 
-            float v = dot(windToVertex, cloth.normal(ku, kv));
+            float v = dot(windToVertex, normal(ku, kv));
 
             // Calcul distance between wind source and vertex
             float distance = norm(cloth.position(ku, kv) - parameters.wind.source);
@@ -113,7 +113,7 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             
             // Verify if it is in the wind direction cone
             if (cgp::abs(angleInDegrees) <= 40.0f) {
-                vec3 windForce = v * cloth.normal(ku, kv) * newMagnitude;
+                vec3 windForce = v * normal(ku, kv) * newMagnitude;
                 force(ku, kv) += windForce;
             }
         }
@@ -161,18 +161,6 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
             vec3& p = cloth.position(ku, kv);
             if (p.z < constraint.ground_z) {
                 p.z = constraint.ground_z + 0.001f;
-            }
-        }
-    }
-
-    // Sphere
-    for (int ku = 0; ku < cloth.N_samples_x(); ++ku) {
-        for (int kv = 0; kv < cloth.N_samples_y(); ++kv) {
-            vec3& p = cloth.position(ku, kv);
-            vec3 const& center = constraint.sphere.center;
-            float const& radius = constraint.sphere.radius + 0.01f;
-            if (norm(p - center) < radius) {
-                p = center + radius * normalize(p - center);
             }
         }
     }

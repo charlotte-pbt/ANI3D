@@ -15,14 +15,14 @@ void scene_structure::initialize()
 	obstacle_floor.model.translation = { 0,0,constraint.ground_z };
 	obstacle_floor.material.texture_settings.two_sided = true;
 
-	obstacle_sphere.initialize_data_on_gpu(mesh_primitive_sphere());
-	obstacle_sphere.model.translation = { 2,0,constraint.ground_z};
-	obstacle_sphere.model.scaling = 1;
-	obstacle_sphere.material.color = { 1,0,0 };
+	mesh laundry_pin_mesh = mesh_load_file_obj("assets/laundry_pin.obj");
+	pin_fixed_position.initialize_data_on_gpu(laundry_pin_mesh);
+	pin_fixed_position.model.scaling = 0.1f;
+	pin_fixed_position.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/laundry_pin_wood.jpg");
+	pin_fixed_position.model.translation = { 0,0,constraint.ground_z};
+	// Add rotation 90° on x axis + 90° on z axis to have the pin in the right direction
+	pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
-	sphere_fixed_position.initialize_data_on_gpu(mesh_primitive_sphere());
-	sphere_fixed_position.model.scaling = 0.02f;
-	sphere_fixed_position.material.color = { 0,0,1 };
 
 	// Load fan obj :
 
@@ -70,8 +70,10 @@ void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cl
 	cloth_drawable1.drawable.material.texture_settings.two_sided = true;
 
 	constraint1.fixed_sample.clear();
-	constraint1.add_fixed_position(0, 0, cloth1);
-	constraint1.add_fixed_position(0, N_sample - 1, cloth1);
+	constraint1.add_fixed_position(1, 2, cloth1);
+	constraint1.add_fixed_position(1, N_sample - 3, cloth1);
+	constraint1.add_fixed_position(0, 2, cloth1);
+	constraint1.add_fixed_position(0, N_sample - 3, cloth1);
 
 	std::cout << "Cloth initialized with " << N_sample << "x" << N_sample << " vertices" << std::endl;
 }
@@ -105,16 +107,31 @@ void scene_structure::display_frame()
 		draw(global_frame, environment);
 
 
-	// Elements of the scene: Obstacles (floor, sphere), and fixed position
+	// Elements of the scene: floor and fixed position
 	// ***************************************** //
 	
 	draw(obstacle_floor, environment);
-	//draw(obstacle_sphere, environment);
-	for (auto const& c : constraint.fixed_sample)
-	{
-		sphere_fixed_position.model.translation = c.second.position;
-		draw(sphere_fixed_position, environment);
-	}
+	
+	// If your cloth is along the x axis, you can rotate the pins by 90° with rotate = true
+	auto draw_pin = [&](constraint_structure constraint, bool rotate = false) {
+		for (auto const& c : constraint.fixed_sample)
+		{
+			if ( c.second.position.x != 0)
+			{
+				pin_fixed_position.model.translation = c.second.position;
+				if (rotate)
+					pin_fixed_position.model.rotation = pin_fixed_position.model.rotation * rotation_transform::from_axis_angle({ 0,1,0 }, Pi/2);
+					
+				draw(pin_fixed_position, environment);
+				pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
+			}
+		}
+	};
+
+	draw_pin(constraint);
+	draw_pin(constraint2);
+	draw_pin(constraint3);
+	draw_pin(constraint4);
 
 	timer.update();
 
