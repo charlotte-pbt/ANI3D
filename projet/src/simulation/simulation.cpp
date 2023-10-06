@@ -3,8 +3,6 @@
 using namespace cgp;
 
 
-
-
 // Fill value of force applied on each particle
 // - Gravity
 // - Drag
@@ -50,7 +48,8 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
 
     // TO DO: Add spring forces ...
     for (int ku = 0; ku < N_x; ++ku) {
-        for (int kv = 0; kv < N_y; ++kv) {
+        for (int kv = 0; kv < N_y; ++kv) 
+        {
             // ...
             // force(ku,kv) = ... fill here the force exerted by all the springs attached to the vertex at coordinates (ku,kv).
             // 
@@ -91,7 +90,10 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
     // Wind force
 
     for (int ku = 0; ku < N_x; ++ku) {
-        for (int kv = 0; kv < N_y; ++kv) {
+        for (int kv = 0; kv < N_y; ++kv) 
+        {
+            if (parameters.wind.magnitude == 0)
+                continue;
 
             // Calcul vector from wind source to vertex
             vec3 windToVertex = normalize(cloth.position(ku, kv) - parameters.wind.source);
@@ -129,7 +131,8 @@ void simulation_numerical_integration(cloth_structure& cloth, float dt)
     float const m = cloth.mass_total/ static_cast<float>(N_total);
 
     for (int ku = 0; ku < N_x; ++ku) {
-        for (int kv = 0; kv < N_y; ++kv) {
+        for (int kv = 0; kv < N_y; ++kv) 
+        {
             vec3& v = cloth.velocity(ku, kv);
             vec3& p = cloth.position(ku, kv);
             vec3 const& f = cloth.force(ku, kv);
@@ -142,29 +145,116 @@ void simulation_numerical_integration(cloth_structure& cloth, float dt)
     
 }
 
-void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint)
+// Vector length
+float length(vec3 v) 
+{
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+// Calcul distance between a point and a line segment
+float DistanceToSegment(vec3 point, vec3 segmentStart, vec3 segmentEnd) 
+{
+    vec3 segment = segmentEnd - segmentStart;
+    vec3 v = point - segmentStart;
+    float t = dot(v, segment) / dot(segment, segment);
+
+    if (t < 0.0f) 
+        return length(point - segmentStart); // Distance at the beginning of the segment
+    else if (t > 1.0f)
+        return length(point - segmentEnd); // Distance at the end of the segment
+    else 
+    {
+        vec3 projection = segmentStart + t * segment;
+        return length(point - projection); // Distance between the point and the projection on the segment
+    }
+}
+
+// Project a point on a capsule
+vec3 projectPointOntoCapsule(vec3 point, vec3 capsuleStart, vec3 capsuleEnd, float capsuleRadius) 
+{
+    vec3 capsuleDirection = normalize(capsuleEnd - capsuleStart);
+    vec3 pointToStart = point - capsuleStart;
+    float t = dot(pointToStart, capsuleDirection);
+
+    // Calcul the projection of the point on the capsule segment
+    if (t <= 0.0f) 
+    {
+        // The point is before the beginning of the capsule, use the beginning of the capsule
+        return capsuleStart + normalize(pointToStart) * capsuleRadius;
+    }
+    else if (t >= length(capsuleEnd - capsuleStart)) 
+    {
+        // The point is after the end of the capsule, use the end of the capsule
+        return capsuleEnd + normalize(point - capsuleEnd) * capsuleRadius;
+    }
+    else 
+    {
+        // The point is on the segment of the capsule
+        vec3 closestPointOnSegment = capsuleStart + t * capsuleDirection;
+
+        // Calcul the direction of the point from the center of the capsule
+        vec3 pointToCenter = point - closestPointOnSegment;
+
+        // If point is below the capsule, use the projection on the segment
+        if (dot(pointToCenter, pointToCenter) <= capsuleRadius * capsuleRadius) 
+        {
+            vec3 correctionVector = normalize(point - closestPointOnSegment) * capsuleRadius;
+            return closestPointOnSegment + correctionVector;
+        }
+        else 
+        {
+            // The point is above the capsule, project it on the upper half-sphere
+            vec3 topOfCapsule = capsuleStart + t * capsuleDirection + vec3(0.0f, capsuleRadius, 0.0f);
+            vec3 directionToTop = normalize(point - topOfCapsule);
+            return topOfCapsule + directionToTop * capsuleRadius;
+        }
+    }
+}
+
+void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint, simulation_parameters const& parameters)
 {
     // Fixed positions of the cloth
-    for (auto const& it : constraint.fixed_sample) {
+    for (auto const& it : constraint.fixed_sample) 
+    {
         position_contraint c = it.second;
         cloth.position(c.ku, c.kv) = c.position; // set the position to the fixed one
     }
 
-    // To do: apply external constraints
-    // For all vertex:
-    //   If vertex is below floor level ...
-    //   If vertex is inside collision sphere ...
-
     // Floor
-    for (int ku = 0; ku < cloth.N_samples_x(); ++ku) {
-        for (int kv = 0; kv < cloth.N_samples_y(); ++kv) {
+    for (int ku = 0; ku < cloth.N_samples_x(); ++ku) 
+    {
+        for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
+        {
             vec3& p = cloth.position(ku, kv);
-            if (p.z < constraint.ground_z) {
+            if (p.z < constraint.ground_z) 
                 p.z = constraint.ground_z + 0.001f;
+        }
+    }
+
+    // Capsule collision (Fan)
+    vec3 capsuleStart = parameters.fan_position +  vec3({ 0.0f, 0.0f, -1.5 });
+    vec3 capsuleEnd = parameters.fan_position +  vec3({ 0.0f, 0.0f, 1.2f });
+    float capsuleRadius = 1.6f;
+
+    for (int ku = 0; ku < cloth.N_samples_x(); ++ku) 
+    {
+        for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
+        {
+            vec3& p = cloth.position(ku, kv);
+
+            // Calcul distance between p and capsule
+            float distanceToCapsule = DistanceToSegment(p, capsuleStart, capsuleEnd);
+
+            // If the p is in collision with the capsule
+            if (distanceToCapsule < capsuleRadius) 
+            {
+                // Adjust the position of the point
+                vec3 correctedPosition = projectPointOntoCapsule(p, capsuleStart, capsuleEnd, capsuleRadius);
+                p = correctedPosition;
             }
         }
     }
-}
+}   
 
 
 

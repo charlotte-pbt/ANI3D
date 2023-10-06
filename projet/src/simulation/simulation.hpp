@@ -8,6 +8,7 @@
 struct simulation_parameters
 {
     float dt = 0.005f;        // time step for the numerical integration
+    vec3 fan_position = { 0,0,0 }; // position of the fan
 
     //  Wind magnitude and direction
     struct {
@@ -26,7 +27,7 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
 void simulation_numerical_integration(cloth_structure& cloth, float dt);
 
 // Apply the constraints (fixed position, obstacles) on the cloth position and velocity
-void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint);
+void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint, simulation_parameters const& parameters);
 
 // Helper function that tries to detect if the simulation diverged 
 bool simulation_detect_divergence(cloth_structure const& cloth);

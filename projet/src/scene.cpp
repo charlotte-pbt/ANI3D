@@ -171,6 +171,7 @@ void scene_structure::display_frame()
 
 	// Fan position
 	hierarchy_fan["fan_base"].transform_local.translation = { hierarchy_fan_position.first, hierarchy_fan_position.second, constraint.ground_z };
+	parameters.fan_position = hierarchy_fan["fan_base"].transform_local.translation + vec3{0, 0, 1};
 
 	// Update the wind source position
 	parameters.wind.source = hierarchy_fan["fan_base"].transform_local.translation;
@@ -205,10 +206,10 @@ void scene_structure::display_frame()
 		simulation_numerical_integration(cloth4, parameters.dt);
 
 		// Apply the positional (and velocity) constraints
-		simulation_apply_constraints(cloth, constraint);
-		simulation_apply_constraints(cloth2, constraint2);
-		simulation_apply_constraints(cloth3, constraint3);
-		simulation_apply_constraints(cloth4, constraint4);
+		simulation_apply_constraints(cloth, constraint, parameters);
+		simulation_apply_constraints(cloth2, constraint2, parameters);
+		simulation_apply_constraints(cloth3, constraint3, parameters);
+		simulation_apply_constraints(cloth4, constraint4, parameters);
 
 		// Check if the simulation has not diverged - otherwise stop it
 		bool const simulation_diverged = simulation_detect_divergence(cloth);
