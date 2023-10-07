@@ -3,7 +3,7 @@
 using namespace cgp;
 
 
-void cloth_structure::initialize(int N_samples_edge_arg, std::vector<vec3> pos, int x_lenght, int y_lenght)
+void cloth_structure::initialize(int N_samples_edge_arg, std::vector<vec3> pos, float x_lenght, float y_lenght)
 {
     lenght_x = x_lenght;
     lenght_y = y_lenght;

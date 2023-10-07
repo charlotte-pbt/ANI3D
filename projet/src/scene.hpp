@@ -48,12 +48,20 @@ struct scene_structure : scene_inputs_generic {
 	// Display of the obstacles and constraints
 	cgp::mesh_drawable obstacle_floor;
 	cgp::mesh_drawable pin_fixed_position;
+
+	// Display of the clothesline
 	cgp::mesh_drawable line;
 	cgp::mesh_drawable left_pole;
 	cgp::mesh_drawable right_pole;
 	cgp::hierarchy_mesh_drawable hierarchy_clothesline;
-	
-	
+
+	// Display of th little clothesline
+	cgp::mesh_drawable little_line;
+	cgp::mesh_drawable little_left_pole;
+	cgp::mesh_drawable little_right_pole;
+	cgp::hierarchy_mesh_drawable hierarchy_little_clothesline;
+
+	// Display of the fan
 	cgp::mesh_drawable fan_base;
 	cgp::mesh_drawable fan_base_head;
 	cgp::mesh_drawable fan_grid;
@@ -64,24 +72,56 @@ struct scene_structure : scene_inputs_generic {
 	// Cloth related structures
 	simulation_parameters parameters;          // Stores the parameters of the simulation (time step, wind settings)
 
-	cloth_structure cloth;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
-	cloth_structure_drawable cloth_drawable;   // Helper structure to display the cloth as a mesh
-	constraint_structure constraint;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
 
-	// Cloth 2
-	cloth_structure cloth2;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
-	cloth_structure_drawable cloth_drawable2;   // Helper structure to display the cloth as a mesh
-	constraint_structure constraint2;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
+	// On clothesline in front of the fan
 
-	// Cloth 3
-	cloth_structure cloth3;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
-	cloth_structure_drawable cloth_drawable3;   // Helper structure to display the cloth as a mesh
-	constraint_structure constraint3;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
+	cloth_structure clothF1;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
+	cloth_structure_drawable cloth_drawableF1;   // Helper structure to display the cloth as a mesh
+	constraint_structure constraintF1;           // Handle the parameters of the constraints (fixed vertices, floor, pin, fan collision)
+	cloth_structure clothF2;                     
+	cloth_structure_drawable cloth_drawableF2;   
+	constraint_structure constraintF2;           
+	cloth_structure clothF3;                     
+	cloth_structure_drawable cloth_drawableF3;   
+	constraint_structure constraintF3;   
 
-	// Cloth 4
-	cloth_structure cloth4;                     // The values of the position, velocity, forces, etc, stored as a 2D grid
-	cloth_structure_drawable cloth_drawable4;   // Helper structure to display the cloth as a mesh
-	constraint_structure constraint4;           // Handle the parameters of the constraints (fixed vertices, floor and sphere)
+	// On clothesline right of the fan
+
+	cloth_structure clothR1; 
+	cloth_structure_drawable cloth_drawableR1;
+	constraint_structure constraintR1;     
+	cloth_structure clothR2;
+	cloth_structure_drawable cloth_drawableR2;
+	constraint_structure constraintR2;
+	cloth_structure clothR3;
+	cloth_structure_drawable cloth_drawableR3;
+	constraint_structure constraintR3;
+
+	// On clothesline left of the fan
+
+	cloth_structure clothL1;
+	cloth_structure_drawable cloth_drawableL1;
+	constraint_structure constraintL1;
+	cloth_structure clothL2;
+	cloth_structure_drawable cloth_drawableL2;
+	constraint_structure constraintL2;
+	cloth_structure clothL3;
+	cloth_structure_drawable cloth_drawableL3;
+	constraint_structure constraintL3;
+	cloth_structure clothL4;
+	cloth_structure_drawable cloth_drawableL4;
+	constraint_structure constraintL4;
+	cloth_structure clothL5;
+	cloth_structure_drawable cloth_drawableL5;
+	constraint_structure constraintL5;
+
+	// On little clothesline (behind the fan)
+
+	cloth_structure clothLC1;                    
+	cloth_structure_drawable cloth_drawableLC1;   
+	constraint_structure constraintLC1;           
+
+                   
 
 	// Helper variables
 	bool simulation_running = true;   // Boolean indicating if the simulation should be computed
@@ -97,7 +137,7 @@ struct scene_structure : scene_inputs_generic {
 
 
 	void initialize_cloths();
-	void initialize_cloth(int N_sample, cloth_structure &cloth, cloth_structure_drawable &cloth_drawable, constraint_structure &constraint, std::vector<vec3> pos, int x_lenght, int y_lenght); // Recompute the cloth from scratch
+	void initialize_cloth(int N_sample, cloth_structure &cloth, cloth_structure_drawable &cloth_drawable, constraint_structure &constraint, std::vector<vec3> pos, float x_lenght, float y_lenght); // Recompute the cloth from scratch
 
 	void mouse_move_event();
 	void mouse_click_event();

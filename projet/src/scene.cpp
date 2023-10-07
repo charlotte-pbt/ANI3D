@@ -12,37 +12,48 @@ void scene_structure::initialize()
 
 	obstacle_floor.initialize_data_on_gpu(mesh_primitive_quadrangle({ -10,-10,0 }, { -10,10,0 }, { 10,10,0 }, { 10,-10,0 }));
 	obstacle_floor.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
-	obstacle_floor.model.translation = { 0,0,constraint.ground_z };
+	obstacle_floor.model.translation = { 0,0,constraintF1.ground_z };
 	obstacle_floor.material.texture_settings.two_sided = true;
 
 	mesh laundry_pin_mesh = mesh_load_file_obj("assets/laundry_pin.obj");
 	pin_fixed_position.initialize_data_on_gpu(laundry_pin_mesh);
 	pin_fixed_position.model.scaling = 0.1f;
 	pin_fixed_position.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/laundry_pin_wood.jpg");
-	pin_fixed_position.model.translation = { 0,0,constraint.ground_z};
+	pin_fixed_position.model.translation = { 0,0,constraintF1.ground_z};
 	pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
+	// Clothesline
 
-	line.initialize_data_on_gpu(mesh_primitive_cylinder(0.01f, { -7,-8,6 }, { -7,8,6 }));
+	line.initialize_data_on_gpu(mesh_primitive_cylinder(0.01f, { -7,-8,6 }, { -7,8,6 }, 10, 20, true));
 	line.material.color = { 0.5f, 0.5f, 0.5f };
-
-	left_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,-8,6.5f }, { -7,-8, constraint.ground_z }));
+	left_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,-8,6.5f }, { -7,-8, constraintF1.ground_z }, 10, 20, true));
 	left_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
-
-	right_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,8,6.5f }, { -7,8, constraint.ground_z }));
+	right_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,8,6.5f }, { -7,8, constraintF1.ground_z }, 10, 20, true));
 	right_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
 
 	hierarchy_clothesline.add(line, "line");
 	hierarchy_clothesline.add(left_pole, "left_pole", "line");
 	hierarchy_clothesline.add(right_pole, "right_pole", "line");
 
+	// Little clothesline
+
+	little_line.initialize_data_on_gpu(mesh_primitive_cylinder(0.01f, { 4,2,6 }, { 4,6,6 }, 10, 20, true));
+	little_line.material.color = { 0.5f, 0.5f, 0.5f };
+	little_left_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { 4,2,6.5f }, { 4,2, constraintF1.ground_z }, 10, 20, true));
+	little_left_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	little_right_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { 4,6,6.5f }, { 4,6, constraintF1.ground_z }, 10, 20, true));
+	little_right_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+
+	hierarchy_little_clothesline.add(little_line, "little_line");
+	hierarchy_little_clothesline.add(little_left_pole, "little_left_pole", "little_line");
+	hierarchy_little_clothesline.add(little_right_pole, "little_right_pole", "little_line");
 
 	// Load fan obj :
 
 	mesh fan_base_mesh = mesh_load_file_obj("assets/fan_base.obj");
 	fan_base.initialize_data_on_gpu(fan_base_mesh);
 	fan_base.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/fan_col.png");
-	fan_base.model.translation = { 0,0,constraint.ground_z};
+	fan_base.model.translation = { 0,0,constraintF1.ground_z};
 	fan_base.model.scaling = 0.3f;
 	fan_base.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
@@ -56,7 +67,6 @@ void scene_structure::initialize()
 	fan_grid.initialize_data_on_gpu(fan_grid_mesh);
 	fan_grid.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/grid_col2.png");
 	fan_grid.shader.load(project::path + "shaders/mesh_transparency/mesh_transparency.vert.glsl", project::path + "shaders/mesh_transparency/mesh_transparency.frag.glsl");
-	fan_grid.material.phong = { 0.4f, 0.6f, 0, 1 };
 	fan_grid.model.scaling = 0.3f;
 	fan_grid.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
 
@@ -75,39 +85,81 @@ void scene_structure::initialize()
 }
 
 // Compute a new cloth in its initial position (can be called multiple times)
-void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth1, cloth_structure_drawable &cloth_drawable1, constraint_structure &constraint1, std::vector<vec3> pos, int x_lenght, int y_lenght)
+void scene_structure::initialize_cloth(int N_sample, cloth_structure &cloth, cloth_structure_drawable &cloth_drawable, constraint_structure &constraint, std::vector<vec3> pos, float x_lenght, float y_lenght)
 {
-	cloth1.initialize(N_sample, pos, x_lenght, y_lenght);
-	cloth_drawable1.initialize(N_sample, x_lenght, y_lenght);
-	cloth_drawable1.drawable.texture = cloth1.texture;
-	cloth_drawable1.drawable.material.texture_settings.two_sided = true;
+	cloth.initialize(N_sample, pos, x_lenght, y_lenght);
+	cloth_drawable.initialize(N_sample, x_lenght, y_lenght);
+	cloth_drawable.drawable.texture = cloth.texture;
+	cloth_drawable.drawable.material.texture_settings.two_sided = true;
 
-	constraint1.fixed_sample.clear();
-	constraint1.add_fixed_position(1, 2, cloth1);
-	constraint1.add_fixed_position(1, N_sample - 3, cloth1);
-	constraint1.add_fixed_position(0, 2, cloth1);
-	constraint1.add_fixed_position(0, N_sample - 3, cloth1);
-
-	std::cout << "Cloth initialized with " << N_sample << "x" << N_sample << " vertices" << std::endl;
+	constraint.fixed_sample.clear();
+	
+	constraint.add_fixed_position(0, 2, cloth);
+	constraint.add_fixed_position(0, N_sample - 3, cloth);
+	constraint.add_fixed_position(1, 2, cloth);
+	constraint.add_fixed_position(1, N_sample - 3, cloth);
+	constraint.add_fixed_position(2, 2, cloth);
+	constraint.add_fixed_position(2, N_sample - 3, cloth);
 }
 
 void scene_structure::initialize_cloths()
 {
-	cloth.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
-	cloth.mass_total = 0.8f;
-	initialize_cloth(gui.N_sample_edge, cloth, cloth_drawable, constraint, { {-7,-2,6}, {-7,-7,6}, {-7,-7,1.2f}, {-7,-2,1.2f} }, 5, 5);
+	// On clothesline in front of the fan
 
-	cloth2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
-	cloth2.mass_total = 0.5f;
-	initialize_cloth(gui.N_sample_edge, cloth2, cloth_drawable2, constraint2, { {-7,7,6}, {-7,2,6}, {-7,2,4.2}, {-7,7,4.2} }, 2, 5);
+	clothF1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothF1.mass_total = 0.8f;
+	initialize_cloth(gui.N_sample_edge, clothF1, cloth_drawableF1, constraintF1, { {-8,-2,6}, {-8,-7,6}, {-8,-7,1.2f}, {-8,-2,1.2f} }, 5, 5);
 
-	cloth3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
-	cloth3.mass_total = 0.3f;
-	initialize_cloth(gui.N_sample_edge, cloth3, cloth_drawable3, constraint3, { {-7,1,6}, {-7,-1,6}, {-7,-1,3.2}, {-7,1,3.2} }, 3, 2);
+	clothF2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	clothF2.mass_total = 0.5f;
+	initialize_cloth(gui.N_sample_edge, clothF2, cloth_drawableF2, constraintF2, { {-8,7,6}, {-8,2,6}, {-8,2,4.2}, {-8,7,4.2} }, 2, 5);
 
-	cloth4.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
-	cloth4.mass_total = 0.5f;
-	initialize_cloth(gui.N_sample_edge, cloth4, cloth_drawable4, constraint4, { {-1.5f,-3,6}, {-1.5f,-5,6}, {-1.5f,-5,1.2}, {-1.5f,-3,1.2} }, 5, 2);
+	clothF3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothF3.mass_total = 0.3f;
+	initialize_cloth(gui.N_sample_edge, clothF3, cloth_drawableF3, constraintF3, { {-8,1,6}, {-8,-1,6}, {-8,-1,3.2}, {-8,1,3.2} }, 3, 2);
+
+	// On clothesline right of the fan
+
+	clothR1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR1.mass_total = 0.8f;
+	initialize_cloth(gui.N_sample_edge, clothR1, cloth_drawableR1, constraintR1, { {-7,8,6}, {-2,8,6}, {-2,8,1.2}, {-7,8,1.2} }, 5, 5);
+
+	clothR2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR2.mass_total = 0.65f;
+	initialize_cloth(gui.N_sample_edge, clothR2, cloth_drawableR2, constraintR2, { {-1,8,6}, {3,8,6}, {3,8,2.2}, {-1,8,2.2} }, 4, 4);
+
+	clothR3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR3.mass_total = 0.45f;
+	initialize_cloth(gui.N_sample_edge, clothR3, cloth_drawableR3, constraintR3, { {4,8,6}, {7,8,6}, {7,8,4.2}, {4,8,4.2} }, 2, 3);
+
+
+	// On clothesline left of the fan
+
+	clothL1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL1.mass_total = 0.45f;
+	initialize_cloth(gui.N_sample_edge, clothL1, cloth_drawableL1, constraintL1, { {-3,-8,6}, {-7,-8,6}, {-7,-8,4.2}, {-3,-8,4.2} }, 2, 4);
+
+	clothL2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL2.mass_total = 0.3f;
+	initialize_cloth(gui.N_sample_edge, clothL2, cloth_drawableL2, constraintL2, { {-2,-8,6}, {-0.5,-8,6}, {-0.5,-8,4.7}, {-2,-8,4.7} }, 1.5, 1.5);
+
+	clothL3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL3.mass_total = 0.3f;
+	initialize_cloth(gui.N_sample_edge, clothL3, cloth_drawableL3, constraintL3, { {0,-8,6}, {1.5,-8,6}, {1.5,-8,4.7}, {0,-8,4.7} }, 1.5, 1.5);
+
+	clothL4.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL4.mass_total = 0.5f;
+	initialize_cloth(gui.N_sample_edge, clothL4, cloth_drawableL4, constraintL4, { {2.5,-8,6}, {4,-8,6}, {4,-8,1.2}, {2.5,-8,1.2} }, 5, 1.5);
+
+	clothL5.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL5.mass_total = 0.6f;
+	initialize_cloth(gui.N_sample_edge, clothL5, cloth_drawableL5, constraintL5, { {5,-8,6}, {7,-8,6}, {7,-8,2.2}, {5,-8,2.2} }, 4, 2);
+
+	// On little clothesline (behind the fan)
+
+	clothLC1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	clothLC1.mass_total = 0.5f;
+	initialize_cloth(gui.N_sample_edge, clothLC1, cloth_drawableLC1, constraintLC1, { {4,5,6}, {4,3,6}, {4,3,1.2}, {4,5,1.2} }, 5, 2);
 }
 
 
@@ -116,41 +168,81 @@ void scene_structure::display_frame()
 	// Set the light to the current position of the camera
 	environment.light = camera_control.camera_model.position();
 	
+	// Frame display
 	if (gui.display_frame)
 		draw(global_frame, environment);
 
-
-	// Elements of the scene: floor and fixed position
-	// ***************************************** //
-	
+	// Floor display
 	draw(obstacle_floor, environment);
+
+
+
+	// Clothes pins display
+	// ***************************************** //
 	
 	// If your cloth is along the x axis, you can rotate the pins by 90° with rotate = true
 	auto draw_pin = [&](constraint_structure constraint, bool rotate = false) {
 		for (auto const& c : constraint.fixed_sample)
 		{
-			if ( c.second.ku != 1)
+			if ( c.second.ku == 0)
 			{
-				pin_fixed_position.model.translation = vec3(c.second.position.x, c.second.position.y, c.second.position.z - 0.15f);
+				vec3 pin_position =  vec3(c.second.position.x, c.second.position.y, 5.8f);
+				pin_fixed_position.model.translation = pin_position;
 				if (rotate)
-				{
 					pin_fixed_position.model.rotation = pin_fixed_position.model.rotation * rotation_transform::from_axis_angle({ 0,1,0 }, Pi/2);
-				}
 				else
 					pin_fixed_position.model.translation.x -= 0.008f;
 					
 				draw(pin_fixed_position, environment);
 				pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
+				pin_fixed_position.model.translation = pin_position;
 			}
 		}
 	};
 
-	draw_pin(constraint);
-	draw_pin(constraint2);
-	draw_pin(constraint3);
-	draw_pin(constraint4);
+	draw_pin(constraintF1);
+	draw_pin(constraintF2);
+	draw_pin(constraintF3);
 
+	draw_pin(constraintR1, true);
+	draw_pin(constraintR2, true);
+	draw_pin(constraintR3, true);
+
+	draw_pin(constraintL1, true);
+	draw_pin(constraintL2, true);
+	draw_pin(constraintL3, true);
+	draw_pin(constraintL4, true);
+	draw_pin(constraintL5, true);
+
+	draw_pin(constraintLC1);
+
+
+
+	// Clotheslines display
+	// ***************************************** //
+
+	// Clothesline in front of the fan
+	hierarchy_clothesline["line"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, 0);;
+	hierarchy_clothesline["line"].transform_local.translation = { -1, 0, 0 };
+	hierarchy_clothesline.update_local_to_global_coordinates();
 	draw(hierarchy_clothesline, environment);
+	// Clothesline left of the fan
+	hierarchy_clothesline["line"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2);
+	hierarchy_clothesline["line"].transform_local.translation = { 0, -1, 0 };
+	hierarchy_clothesline.update_local_to_global_coordinates();
+	draw(hierarchy_clothesline, environment);
+	// Clothesline right of the fan
+	hierarchy_clothesline["line"].transform_local.translation = { 0, 15, 0 };
+	hierarchy_clothesline.update_local_to_global_coordinates();
+	draw(hierarchy_clothesline, environment);
+
+	// Little clothesline (behind of the fan)
+	draw(hierarchy_little_clothesline, environment);
+
+
+
+	// Simulation and display of the fan
+	// ***************************************** //
 
 	timer.update();
 
@@ -189,7 +281,7 @@ void scene_structure::display_frame()
 		rotation_speed = 0.0f;
 
 	// Fan position
-	hierarchy_fan["fan_base"].transform_local.translation = { hierarchy_fan_position.first, hierarchy_fan_position.second, constraint.ground_z };
+	hierarchy_fan["fan_base"].transform_local.translation = { hierarchy_fan_position.first, hierarchy_fan_position.second, constraintF1.ground_z };
 	parameters.fan_position = hierarchy_fan["fan_base"].transform_local.translation + vec3{0, 0, 1};
 
 	// Update the wind source position
@@ -204,77 +296,83 @@ void scene_structure::display_frame()
 	mat3 objectTransform = hierarchy_fan["fan_base_head"].transform_local.rotation.matrix();
 	parameters.wind.direction = normalize(objectTransform * parameters.wind.initial_direction);
 
+	// Display the fan
 	hierarchy_fan.update_local_to_global_coordinates();
 	draw(hierarchy_fan, environment);
 	
+
+
 	// Simulation of the cloth
 	// ***************************************** //
+
+	auto simulation = [](cloth_structure &cloth, simulation_parameters &parameters, constraint_structure &constraint) 
+	{
+		simulation_compute_force(cloth, parameters);
+		simulation_numerical_integration(cloth, parameters.dt);
+		simulation_apply_constraints(cloth, constraint, parameters);
+
+		bool const simulation_diverged = simulation_detect_divergence(cloth);
+		if (simulation_diverged) 
+		{
+			std::cout << "\n *** Simulation has diverged for ***" << std::endl;
+			std::cout << " > The simulation is stoped" << std::endl;
+			return false;
+		}
+		return true;
+	};
+
 	int const N_step = 5; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
 	for (int k_step = 0; simulation_running == true && k_step < N_step; ++k_step)
 	{
-		// Update the forces on each particle
-		simulation_compute_force(cloth, parameters);
-		simulation_compute_force(cloth2, parameters);
-		simulation_compute_force(cloth3, parameters);
-		simulation_compute_force(cloth4, parameters);
+		simulation(clothF1, parameters, constraintF1) ? simulation_running = true :  simulation_running = false;
+		simulation(clothF2, parameters, constraintF2) ? simulation_running = true :  simulation_running = false;
+		simulation(clothF3, parameters, constraintF3) ? simulation_running = true :  simulation_running = false;
 
-		// One step of numerical integration
-		simulation_numerical_integration(cloth, parameters.dt);
-		simulation_numerical_integration(cloth2, parameters.dt);
-		simulation_numerical_integration(cloth3, parameters.dt);
-		simulation_numerical_integration(cloth4, parameters.dt);
+		simulation(clothR1, parameters, constraintR1) ? simulation_running = true :  simulation_running = false;
+		simulation(clothR2, parameters, constraintR2) ? simulation_running = true :  simulation_running = false;
+		simulation(clothR3, parameters, constraintR3) ? simulation_running = true :  simulation_running = false;
 
-		// Apply the positional (and velocity) constraints
-		simulation_apply_constraints(cloth, constraint, parameters);
-		simulation_apply_constraints(cloth2, constraint2, parameters);
-		simulation_apply_constraints(cloth3, constraint3, parameters);
-		simulation_apply_constraints(cloth4, constraint4, parameters);
+		simulation(clothL1, parameters, constraintL1) ? simulation_running = true :  simulation_running = false;
+		simulation(clothL2, parameters, constraintL2) ? simulation_running = true :  simulation_running = false;
+		simulation(clothL3, parameters, constraintL3) ? simulation_running = true :  simulation_running = false;
+		simulation(clothL4, parameters, constraintL4) ? simulation_running = true :  simulation_running = false;
+		simulation(clothL5, parameters, constraintL5) ? simulation_running = true :  simulation_running = false;
 
-		// Check if the simulation has not diverged - otherwise stop it
-		bool const simulation_diverged = simulation_detect_divergence(cloth);
-		bool const simulation_diverged2 = simulation_detect_divergence(cloth2);
-		bool const simulation_diverged3 = simulation_detect_divergence(cloth3);
-		bool const simulation_diverged4 = simulation_detect_divergence(cloth4);
-		if (simulation_diverged || simulation_diverged2 || simulation_diverged3 || simulation_diverged4) {
-			std::cout << "\n *** Simulation has diverged for ***" << std::endl;
-			std::cout << " > The simulation is stoped" << std::endl;
-			simulation_running = false;
-		}
+		simulation(clothLC1, parameters, constraintLC1) ? simulation_running = true :  simulation_running = false;
 	}
+
 
 
 	// Cloth display
 	// ***************************************** //
 
-	// Prepare to display the updated cloth
-	cloth.update_normal();        // compute the new normals
-	cloth_drawable.update(cloth); // update the positions on the GPU
+	auto cloth_display = [](cloth_structure_drawable &cloth_drawable, cloth_structure &cloth, gui_parameters gui, environment_structure &e)
+	{
+		// Prepare to display the updated cloth
+		cloth.update_normal();        // compute the new normals
+		cloth_drawable.update(cloth); // update the positions on the GPU
 
-	cloth2.update_normal();        // compute the new normals
-	cloth_drawable2.update(cloth2); // update the positions on the GPU
+		// Display the cloth
+		draw(cloth_drawable, e);
+		if (gui.display_wireframe)
+			draw_wireframe(cloth_drawable, e);
+	};
 
-	cloth3.update_normal();        // compute the new normals
-	cloth_drawable3.update(cloth3); // update the positions on the GPU
+	cloth_display(cloth_drawableF1, clothF1, gui, environment);
+	cloth_display(cloth_drawableF2, clothF2, gui, environment);
+	cloth_display(cloth_drawableF3, clothF3, gui, environment);
 
-	cloth4.update_normal();        // compute the new normals
-	cloth_drawable4.update(cloth4); // update the positions on the GPU
+	cloth_display(cloth_drawableR1, clothR1, gui, environment);
+	cloth_display(cloth_drawableR2, clothR2, gui, environment);
+	cloth_display(cloth_drawableR3, clothR3, gui, environment);
 
-	// Display the cloths
-	draw(cloth_drawable, environment);
-	if (gui.display_wireframe)
-		draw_wireframe(cloth_drawable, environment);
-		
-	draw(cloth_drawable2, environment);
-	if (gui.display_wireframe)
-		draw_wireframe(cloth_drawable2, environment);
+	cloth_display(cloth_drawableL1, clothL1, gui, environment);
+	cloth_display(cloth_drawableL2, clothL2, gui, environment);
+	cloth_display(cloth_drawableL3, clothL3, gui, environment);
+	cloth_display(cloth_drawableL4, clothL4, gui, environment);
+	cloth_display(cloth_drawableL5, clothL5, gui, environment);
 
-	draw(cloth_drawable3, environment);
-	if (gui.display_wireframe)
-		draw_wireframe(cloth_drawable3, environment);
-
-	draw(cloth_drawable4, environment);
-	if (gui.display_wireframe)
-		draw_wireframe(cloth_drawable4, environment);
+	cloth_display(cloth_drawableLC1, clothLC1, gui, environment);
 }
 
 void scene_structure::display_gui()
@@ -284,7 +382,6 @@ void scene_structure::display_gui()
 	ImGui::Text("Display");
 	ImGui::Checkbox("Frame", &gui.display_frame);
 	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
-	ImGui::Checkbox("Texture Cloth", &cloth_drawable.drawable.material.texture_settings.active);
 
 	ImGui::Spacing(); ImGui::Spacing();
 
