@@ -20,8 +20,21 @@ void scene_structure::initialize()
 	pin_fixed_position.model.scaling = 0.1f;
 	pin_fixed_position.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/laundry_pin_wood.jpg");
 	pin_fixed_position.model.translation = { 0,0,constraint.ground_z};
-	// Add rotation 90° on x axis + 90° on z axis to have the pin in the right direction
 	pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
+
+
+	line.initialize_data_on_gpu(mesh_primitive_cylinder(0.01f, { -7,-8,6 }, { -7,8,6 }));
+	line.material.color = { 0.5f, 0.5f, 0.5f };
+
+	left_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,-8,6.5f }, { -7,-8, constraint.ground_z }));
+	left_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+
+	right_pole.initialize_data_on_gpu(mesh_primitive_cylinder(0.1f, { -7,8,6.5f }, { -7,8, constraint.ground_z }));
+	right_pole.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+
+	hierarchy_clothesline.add(line, "line");
+	hierarchy_clothesline.add(left_pole, "left_pole", "line");
+	hierarchy_clothesline.add(right_pole, "right_pole", "line");
 
 
 	// Load fan obj :
@@ -116,11 +129,15 @@ void scene_structure::display_frame()
 	auto draw_pin = [&](constraint_structure constraint, bool rotate = false) {
 		for (auto const& c : constraint.fixed_sample)
 		{
-			if ( c.second.position.x != 0)
+			if ( c.second.ku != 1)
 			{
-				pin_fixed_position.model.translation = c.second.position;
+				pin_fixed_position.model.translation = vec3(c.second.position.x, c.second.position.y, c.second.position.z - 0.15f);
 				if (rotate)
+				{
 					pin_fixed_position.model.rotation = pin_fixed_position.model.rotation * rotation_transform::from_axis_angle({ 0,1,0 }, Pi/2);
+				}
+				else
+					pin_fixed_position.model.translation.x -= 0.008f;
 					
 				draw(pin_fixed_position, environment);
 				pin_fixed_position.model.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, Pi / 2) * rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2);
@@ -132,6 +149,8 @@ void scene_structure::display_frame()
 	draw_pin(constraint2);
 	draw_pin(constraint3);
 	draw_pin(constraint4);
+
+	draw(hierarchy_clothesline, environment);
 
 	timer.update();
 

@@ -48,7 +48,12 @@ struct scene_structure : scene_inputs_generic {
 	// Display of the obstacles and constraints
 	cgp::mesh_drawable obstacle_floor;
 	cgp::mesh_drawable pin_fixed_position;
-	cgp::mesh_drawable sphere;
+	cgp::mesh_drawable line;
+	cgp::mesh_drawable left_pole;
+	cgp::mesh_drawable right_pole;
+	cgp::hierarchy_mesh_drawable hierarchy_clothesline;
+	
+	
 	cgp::mesh_drawable fan_base;
 	cgp::mesh_drawable fan_base_head;
 	cgp::mesh_drawable fan_grid;
