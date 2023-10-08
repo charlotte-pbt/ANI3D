@@ -11,7 +11,7 @@ void scene_structure::initialize()
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
 	obstacle_floor.initialize_data_on_gpu(mesh_primitive_quadrangle({ -10,-10,0 }, { -10,10,0 }, { 10,10,0 }, { 10,-10,0 }));
-	obstacle_floor.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	obstacle_floor.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/ground.jpg", GL_REPEAT, GL_REPEAT);
 	obstacle_floor.model.translation = { 0,0,constraintF1.ground_z };
 	obstacle_floor.material.texture_settings.two_sided = true;
 
@@ -106,58 +106,58 @@ void scene_structure::initialize_cloths()
 {
 	// On clothesline in front of the fan
 
-	clothF1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothF1.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/picnic.jpg", GL_REPEAT, GL_REPEAT);
 	clothF1.mass_total = 0.8f;
 	initialize_cloth(gui.N_sample_edge, clothF1, cloth_drawableF1, constraintF1, { {-8,-2,6}, {-8,-7,6}, {-8,-7,1.2f}, {-8,-2,1.2f} }, 5, 5);
 
-	clothF2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	clothF2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/towel.jpg", GL_REPEAT, GL_REPEAT);
 	clothF2.mass_total = 0.5f;
 	initialize_cloth(gui.N_sample_edge, clothF2, cloth_drawableF2, constraintF2, { {-8,7,6}, {-8,2,6}, {-8,2,4.2}, {-8,7,4.2} }, 2, 5);
 
-	clothF3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothF3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/blue.png", GL_REPEAT, GL_REPEAT);
 	clothF3.mass_total = 0.3f;
 	initialize_cloth(gui.N_sample_edge, clothF3, cloth_drawableF3, constraintF3, { {-8,1,6}, {-8,-1,6}, {-8,-1,3.2}, {-8,1,3.2} }, 3, 2);
 
 	// On clothesline right of the fan
 
-	clothR1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/tartan2.jpg", GL_REPEAT, GL_REPEAT);
 	clothR1.mass_total = 0.8f;
 	initialize_cloth(gui.N_sample_edge, clothR1, cloth_drawableR1, constraintR1, { {-7,8,6}, {-2,8,6}, {-2,8,1.2}, {-7,8,1.2} }, 5, 5);
 
-	clothR2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/green.jpg", GL_REPEAT, GL_REPEAT);
 	clothR2.mass_total = 0.65f;
 	initialize_cloth(gui.N_sample_edge, clothR2, cloth_drawableR2, constraintR2, { {-1,8,6}, {3,8,6}, {3,8,2.2}, {-1,8,2.2} }, 4, 4);
 
-	clothR3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothR3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/towel.jpg", GL_REPEAT, GL_REPEAT);
 	clothR3.mass_total = 0.45f;
 	initialize_cloth(gui.N_sample_edge, clothR3, cloth_drawableR3, constraintR3, { {4,8,6}, {7,8,6}, {7,8,4.2}, {4,8,4.2} }, 2, 3);
 
 
 	// On clothesline left of the fan
 
-	clothL1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/towel.jpg");
 	clothL1.mass_total = 0.45f;
 	initialize_cloth(gui.N_sample_edge, clothL1, cloth_drawableL1, constraintL1, { {-3,-8,6}, {-7,-8,6}, {-7,-8,4.2}, {-3,-8,4.2} }, 2, 4);
 
-	clothL2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL2.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/tartan.jpg");
 	clothL2.mass_total = 0.3f;
 	initialize_cloth(gui.N_sample_edge, clothL2, cloth_drawableL2, constraintL2, { {-2,-8,6}, {-0.5,-8,6}, {-0.5,-8,4.7}, {-2,-8,4.7} }, 1.5, 1.5);
 
-	clothL3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL3.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/tartan.jpg");
 	clothL3.mass_total = 0.3f;
 	initialize_cloth(gui.N_sample_edge, clothL3, cloth_drawableL3, constraintL3, { {0,-8,6}, {1.5,-8,6}, {1.5,-8,4.7}, {0,-8,4.7} }, 1.5, 1.5);
 
-	clothL4.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL4.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/blue.jpg");
 	clothL4.mass_total = 0.5f;
 	initialize_cloth(gui.N_sample_edge, clothL4, cloth_drawableL4, constraintL4, { {2.5,-8,6}, {4,-8,6}, {4,-8,1.2}, {2.5,-8,1.2} }, 5, 1.5);
 
-	clothL5.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/cloth.jpg");
+	clothL5.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/motif.jpg");
 	clothL5.mass_total = 0.6f;
 	initialize_cloth(gui.N_sample_edge, clothL5, cloth_drawableL5, constraintL5, { {5,-8,6}, {7,-8,6}, {7,-8,2.2}, {5,-8,2.2} }, 4, 2);
 
 	// On little clothesline (behind the fan)
 
-	clothLC1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/wood.jpg");
+	clothLC1.texture.load_and_initialize_texture_2d_on_gpu(project::path+"assets/blue.jpg");
 	clothLC1.mass_total = 0.5f;
 	initialize_cloth(gui.N_sample_edge, clothLC1, cloth_drawableLC1, constraintLC1, { {4,5,6}, {4,3,6}, {4,3,1.2}, {4,5,1.2} }, 5, 2);
 }
@@ -289,13 +289,13 @@ void scene_structure::display_frame()
 	// Comparer les nombres tronqués
 	if (truncated_new_rotation_speed != truncated_rotation_speed)
 	{
-		std::cout << "Rotation speed begin : " << truncated_rotation_speed << " " << truncated_new_rotation_speed << std::endl;
-		 float delta = truncated_new_rotation_speed - truncated_rotation_speed;
+		float delta = truncated_new_rotation_speed - truncated_rotation_speed;
 		if (std::abs(delta) < rotation_speed_change_rate) 
 		{
 			// Si la différence est inférieure à la valeur de changement, fixez-la à la nouvelle valeur
 			rotation_speed = new_rotation_speed;
-		} else 
+		} 
+		else 
 		{
 			// Sinon, ajustez la vitesse progressivement
 			rotation_speed += (delta > 0.0f ? 1.0f : -1.0f) * rotation_speed_change_rate;
