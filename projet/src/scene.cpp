@@ -270,15 +270,38 @@ void scene_structure::display_frame()
 	}
 
 	// Update rotation fan speed in function of the GUI
-	float rotation_speed = 0.5f;
+	// Définissez les nouvelles vitesses de rotation souhaitées en fonction de la GUI
+	
 	if (gui.rotation_speed1)
-		rotation_speed = 0.5f;
+		new_rotation_speed = 1.00f;
 	else if (gui.rotation_speed2)
-		rotation_speed = 1.2f;
+		new_rotation_speed = 1.40f;
 	else if (gui.rotation_speed3)
-		rotation_speed = 1.8f;
+		new_rotation_speed = 2.0f;
 	else
-		rotation_speed = 0.0f;
+		new_rotation_speed = 0.0f;
+
+	// Ajoutez une valeur de changement de rotation progressif
+	const float rotation_speed_change_rate = 0.01f; // Réglez cela selon la vitesse souhaitée
+	float truncated_new_rotation_speed = std::round(new_rotation_speed * 100.0f) / 100.0f;
+	float truncated_rotation_speed = std::round(rotation_speed * 100.0f) / 100.0f;
+
+	// Comparer les nombres tronqués
+	if (truncated_new_rotation_speed != truncated_rotation_speed)
+	{
+		std::cout << "Rotation speed begin : " << truncated_rotation_speed << " " << truncated_new_rotation_speed << std::endl;
+		 float delta = truncated_new_rotation_speed - truncated_rotation_speed;
+		if (std::abs(delta) < rotation_speed_change_rate) 
+		{
+			// Si la différence est inférieure à la valeur de changement, fixez-la à la nouvelle valeur
+			rotation_speed = new_rotation_speed;
+		} else 
+		{
+			// Sinon, ajustez la vitesse progressivement
+			rotation_speed += (delta > 0.0f ? 1.0f : -1.0f) * rotation_speed_change_rate;
+		}
+	}
+	
 
 	// Fan position
 	hierarchy_fan["fan_base"].transform_local.translation = { hierarchy_fan_position.first, hierarchy_fan_position.second, constraintF1.ground_z };
@@ -290,7 +313,7 @@ void scene_structure::display_frame()
 
 	// Fan rotation
 	hierarchy_fan["fan_propellers"].transform_local.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, speed * timer.t);
-	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, std::sin(-rotation_speed * timer.t));
+	hierarchy_fan["fan_base_head"].transform_local.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, clamp(std::sin(timer.t) * rotation_speed, -1, 1));
 
 	// Update the direction of the wind with de rotation of the fan
 	mat3 objectTransform = hierarchy_fan["fan_base_head"].transform_local.rotation.matrix();

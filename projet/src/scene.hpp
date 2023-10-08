@@ -68,6 +68,9 @@ struct scene_structure : scene_inputs_generic {
 	cgp::mesh_drawable fan_propellers;
 	cgp::hierarchy_mesh_drawable hierarchy_fan;
 	std::pair<float, float> hierarchy_fan_position = { 0.0f, 0.0f };
+	// Fan rotation speed
+	float rotation_speed = 0.00f;
+	float new_rotation_speed = 0.00f;
 
 	// Cloth related structures
 	simulation_parameters parameters;          // Stores the parameters of the simulation (time step, wind settings)
