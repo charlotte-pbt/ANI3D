@@ -410,16 +410,13 @@ void scene_structure::display_gui()
 
 	ImGui::Text("Simulation parameters");
 	ImGui::SliderFloat("Time step", &parameters.dt, 0.0001f, 0.02f, "%.4f", 2.0f);
-	/*
-	ImGui::SliderFloat("Stiffness", &parameters.K, 0.2f, 50.0f, "%.3f", 2.0f);
-	ImGui::SliderFloat("Damping", &parameters.mu, 1.0f, 30.0f);
-	ImGui::SliderFloat("Mass", &parameters.mass_total, 0.2f, 5.0f, "%.3f", 2.0f);
-	*/
 
 	ImGui::Spacing(); ImGui::Spacing();
 
 	ImGui::Text("Fan parameters");
 	ImGui::SliderFloat("x", &hierarchy_fan_position.first, -9, 9);
+
+	// Check if the fan is in collision with a clothesline
 	if (!parameters.fan_max_y && !parameters.fan_min_y)
 	{
 		vec3 res_col = simulation_fan_clothesline(parameters, 'x');
@@ -444,7 +441,10 @@ void scene_structure::display_gui()
 		parameters.fan_max_x = false;
 		parameters.fan_min_x = false;
 	}
+
 	ImGui::SliderFloat("y", &hierarchy_fan_position.second, -9, 9);
+
+	// Check if the fan is in collision with a clothesline
 	if (!parameters.fan_max_x && !parameters.fan_min_x)
 	{
 		vec3 res_col = simulation_fan_clothesline(parameters, 'y');

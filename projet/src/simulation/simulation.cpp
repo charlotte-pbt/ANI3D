@@ -310,12 +310,11 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
 
 vec3 simulation_fan_clothesline(simulation_parameters &parameters, char axis)
 {   
-    
     for (auto clothesline : parameters.clothesline_poles)
     {
-        // collision between 2 capsules
+        // Collision between 2 capsules
+       
         vec3 fanStart = parameters.fan_position;
-        vec3 fanEnd = parameters.fan_position +  vec3({ 0.0f, 0.0f, 1.2f });
         float fanRadius = 1.2f;
 
         vec3 cylinderStart = clothesline.first;
@@ -325,10 +324,10 @@ vec3 simulation_fan_clothesline(simulation_parameters &parameters, char axis)
         // Calcul distance between 2 capsules
         float distanceToCapsule = DistanceToSegment(fanStart, cylinderStart, cylinderEnd);
 
-        // If the p is in collision with the capsule
+        // If is in collision
         if (distanceToCapsule < fanRadius + cylinderRadius) 
         {
-            // Adjust the position of the point
+            // Adjust the position of the fan
             vec3 correctedPosition = projectPointOntoCapsule(fanStart, cylinderStart, cylinderEnd, cylinderRadius + fanRadius);
 
             if (axis == 'x')
