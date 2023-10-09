@@ -420,7 +420,55 @@ void scene_structure::display_gui()
 
 	ImGui::Text("Fan parameters");
 	ImGui::SliderFloat("x", &hierarchy_fan_position.first, -9, 9);
+	if (!parameters.fan_max_y && !parameters.fan_min_y)
+	{
+		vec3 res_col = simulation_fan_clothesline(parameters, 'x');
+		if (res_col.x != 0 && res_col.y != 0 && res_col.z != 0)
+		{
+			if (parameters.fan_max_x)
+				if (hierarchy_fan_position.first > res_col.x)
+					hierarchy_fan_position.first = res_col.x;
+			else if (parameters.fan_min_x)
+				if (hierarchy_fan_position.first < res_col.x)
+					hierarchy_fan_position.first = res_col.x;
+			hierarchy_fan_position.second = res_col.y;
+		}
+		else
+		{
+		parameters.fan_max_y = false;
+		parameters.fan_min_y = false;
+		}
+	}
+	else
+	{
+		parameters.fan_max_x = false;
+		parameters.fan_min_x = false;
+	}
 	ImGui::SliderFloat("y", &hierarchy_fan_position.second, -9, 9);
+	if (!parameters.fan_max_x && !parameters.fan_min_x)
+	{
+		vec3 res_col = simulation_fan_clothesline(parameters, 'y');
+		if (res_col.x != 0 && res_col.y != 0 && res_col.z != 0)
+		{
+			if (parameters.fan_max_y)
+				if (hierarchy_fan_position.second > res_col.y)
+					hierarchy_fan_position.second = res_col.y;
+			else if (parameters.fan_min_y)
+				if (hierarchy_fan_position.second < res_col.y)
+					hierarchy_fan_position.second = res_col.y;
+			hierarchy_fan_position.first = res_col.x;
+		}
+		else
+		{
+		parameters.fan_max_y = false;
+		parameters.fan_min_y = false;
+		}
+	}
+	else
+	{
+		parameters.fan_max_y = false;
+		parameters.fan_min_y = false;
+	}
 	ImGui::Text("Wind force");
 	ImGui::Checkbox("1", &gui.speed1);
 	if (gui.speed1)

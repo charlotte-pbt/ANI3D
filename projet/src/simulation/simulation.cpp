@@ -231,17 +231,16 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
         }
     }
 
-    // Capsule collision (Fan)
+    // Fan collision
     vec3 capsuleStart = parameters.fan_position +  vec3({ 0.0f, 0.0f, -1.5 });
     vec3 capsuleEnd = parameters.fan_position +  vec3({ 0.0f, 0.0f, 1.2f });
-    float capsuleRadius = 1.6f;
+    float capsuleRadius = 1.55f;
 
     for (int ku = 0; ku < cloth.N_samples_x(); ++ku) 
     {
         for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
         {
             vec3& p = cloth.position(ku, kv);
-
             // Calcul distance between p and capsule
             float distanceToCapsule = DistanceToSegment(p, capsuleStart, capsuleEnd);
 
@@ -254,7 +253,124 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
             }
         }
     }
-}   
+
+    // Clothesline poles collision
+    for (int i = 0; i < parameters.clothesline_poles.size(); i++)
+    {
+        vec3 cylinderStart = parameters.clothesline_poles[i].first;
+        vec3 cylinderEnd = parameters.clothesline_poles[i].second;
+        float cylinderRadius = 0.3f;
+
+        for (int ku = 0; ku < cloth.N_samples_x(); ++ku) 
+        {
+            for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
+            {
+                vec3& p = cloth.position(ku, kv);
+                // Calcul distance between p and capsule
+                float distanceToCylinder = DistanceToSegment(p, cylinderStart, cylinderEnd);
+
+                // If the p is in collision with the capsule
+                if (distanceToCylinder < cylinderRadius) 
+                {
+                    // Adjust the position of the point
+                    vec3 correctedPosition = projectPointOntoCapsule(p, cylinderStart, cylinderEnd, cylinderRadius);
+                    p = correctedPosition;
+                }
+            }
+        }
+    }
+
+    // Clothesline collision
+    for (int i = 0; i < parameters.clothesline.size(); i++)
+    {
+        vec3 cylinderStart = parameters.clothesline[i].first;
+        vec3 cylinderEnd = parameters.clothesline[i].second;
+        float cylinderRadius = 0.3f;
+
+        for (int ku = 2; ku < cloth.N_samples_x(); ++ku) 
+        {
+            for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
+            {
+                vec3& p = cloth.position(ku, kv);
+                // Calcul distance between p and capsule
+                float distanceToCylinder = DistanceToSegment(p, cylinderStart, cylinderEnd);
+
+                // If the p is in collision with the capsule
+                if (distanceToCylinder < cylinderRadius) 
+                {
+                    // Adjust the position of the point
+                    vec3 correctedPosition = projectPointOntoCapsule(p, cylinderStart, cylinderEnd, cylinderRadius);
+                    p = correctedPosition;
+                }
+            }
+        }
+    }
+}  
+
+
+vec3 simulation_fan_clothesline(simulation_parameters &parameters, char axis)
+{   
+    
+    for (auto clothesline : parameters.clothesline_poles)
+    {
+        // collision between 2 capsules
+        vec3 fanStart = parameters.fan_position;
+        vec3 fanEnd = parameters.fan_position +  vec3({ 0.0f, 0.0f, 1.2f });
+        float fanRadius = 1.2f;
+
+        vec3 cylinderStart = clothesline.first;
+        vec3 cylinderEnd = clothesline.second;
+        float cylinderRadius = 0.3f;
+
+        // Calcul distance between 2 capsules
+        float distanceToCapsule = DistanceToSegment(fanStart, cylinderStart, cylinderEnd);
+
+        // If the p is in collision with the capsule
+        if (distanceToCapsule < fanRadius + cylinderRadius) 
+        {
+            // Adjust the position of the point
+            vec3 correctedPosition = projectPointOntoCapsule(fanStart, cylinderStart, cylinderEnd, cylinderRadius + fanRadius);
+
+            if (axis == 'x')
+            {
+                if (fanStart.x < cylinderStart.x)
+                {
+                    parameters.fan_max_x = true;
+                    parameters.fan_min_x = false;
+                }
+                else
+                {
+                    parameters.fan_min_x = true;
+                    parameters.fan_max_x = false;
+                }
+                parameters.fan_min_y = false;
+                parameters.fan_max_y = false;
+                return correctedPosition;
+            }
+            else if (axis == 'y')
+            {
+                if (fanStart.y < cylinderStart.y)
+                {
+                    parameters.fan_max_y = true;
+                    parameters.fan_min_y = false;
+                }
+                else
+                {
+                    parameters.fan_min_y = true;
+                    parameters.fan_max_y = false;
+                }
+                parameters.fan_min_x = false;
+                parameters.fan_max_x = false;
+                return correctedPosition;
+            }
+        }
+    }
+    parameters.fan_min_x = false;
+    parameters.fan_max_x = false;
+    parameters.fan_min_y = false;
+    parameters.fan_max_y = false;
+    return {0,0,0};
+}
 
 
 
