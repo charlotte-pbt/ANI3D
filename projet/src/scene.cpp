@@ -344,7 +344,7 @@ void scene_structure::display_frame()
 		return true;
 	};
 
-	int const N_step = 5; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
+	int const N_step = 10; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
 	for (int k_step = 0; simulation_running == true && k_step < N_step; ++k_step)
 	{
 		simulation(clothF1, parameters, constraintF1) ? simulation_running = true :  simulation_running = false;
@@ -423,11 +423,15 @@ void scene_structure::display_gui()
 		if (res_col.x != 0 && res_col.y != 0 && res_col.z != 0)
 		{
 			if (parameters.fan_max_x)
+			{
 				if (hierarchy_fan_position.first > res_col.x)
 					hierarchy_fan_position.first = res_col.x;
+			}
 			else if (parameters.fan_min_x)
+			{
 				if (hierarchy_fan_position.first < res_col.x)
 					hierarchy_fan_position.first = res_col.x;
+			}
 			hierarchy_fan_position.second = res_col.y;
 		}
 		else
@@ -451,11 +455,15 @@ void scene_structure::display_gui()
 		if (res_col.x != 0 && res_col.y != 0 && res_col.z != 0)
 		{
 			if (parameters.fan_max_y)
+			{
 				if (hierarchy_fan_position.second > res_col.y)
 					hierarchy_fan_position.second = res_col.y;
+			}
 			else if (parameters.fan_min_y)
+			{
 				if (hierarchy_fan_position.second < res_col.y)
 					hierarchy_fan_position.second = res_col.y;
+			}
 			hierarchy_fan_position.first = res_col.x;
 		}
 		else

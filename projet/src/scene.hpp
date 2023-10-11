@@ -11,7 +11,7 @@ using cgp::mesh_drawable;
 
 
 struct gui_parameters {
-	bool display_frame = true;
+	bool display_frame = false;
 	bool display_wireframe = false;
 	int N_sample_edge = 20;  // number of samples of the cloth (the total number of vertices is N_sample_edge^2)
 

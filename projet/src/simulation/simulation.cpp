@@ -176,7 +176,7 @@ vec3 projectPointOntoCapsule(vec3 point, vec3 capsuleStart, vec3 capsuleEnd, flo
     vec3 pointToStart = point - capsuleStart;
     float t = dot(pointToStart, capsuleDirection);
 
-    // Calcul the projection of the point on the capsule segment
+    // Calculate the projection of the point on the capsule segment
     if (t <= 0.0f) 
     {
         // The point is before the beginning of the capsule, use the beginning of the capsule
@@ -192,7 +192,7 @@ vec3 projectPointOntoCapsule(vec3 point, vec3 capsuleStart, vec3 capsuleEnd, flo
         // The point is on the segment of the capsule
         vec3 closestPointOnSegment = capsuleStart + t * capsuleDirection;
 
-        // Calcul the direction of the point from the center of the capsule
+        // Calculate the direction of the point from the center of the capsule
         vec3 pointToCenter = point - closestPointOnSegment;
 
         // If point is below the capsule, use the projection on the segment
@@ -206,10 +206,23 @@ vec3 projectPointOntoCapsule(vec3 point, vec3 capsuleStart, vec3 capsuleEnd, flo
             // The point is above the capsule, project it on the upper half-sphere
             vec3 topOfCapsule = capsuleStart + t * capsuleDirection + vec3(0.0f, capsuleRadius, 0.0f);
             vec3 directionToTop = normalize(point - topOfCapsule);
-            return topOfCapsule + directionToTop * capsuleRadius;
+
+            // Ensure that the corrected point lies within the capsule
+            vec3 correctedPoint = topOfCapsule + directionToTop * capsuleRadius;
+            
+            // Make sure the corrected point is within the capsule segment
+            float distanceToSegment = DistanceToSegment(correctedPoint, capsuleStart, capsuleEnd);
+            if (distanceToSegment > capsuleRadius) 
+            {
+                // If the corrected point is outside the segment, use the closest endpoint
+                return (distanceToSegment < 0.5f) ? capsuleStart : capsuleEnd;
+            }
+
+            return correctedPoint;
         }
     }
 }
+
 
 void simulation_apply_constraints(cloth_structure& cloth, constraint_structure const& constraint, simulation_parameters const& parameters)
 {
@@ -254,6 +267,7 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
         }
     }
 
+    
     // Clothesline poles collision
     for (int i = 0; i < parameters.clothesline_poles.size(); i++)
     {
@@ -279,32 +293,36 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
             }
         }
     }
-
+    
+    /*
     // Clothesline collision
-    for (int i = 0; i < parameters.clothesline.size(); i++)
-    {
-        vec3 cylinderStart = parameters.clothesline[i].first;
-        vec3 cylinderEnd = parameters.clothesline[i].second;
-        float cylinderRadius = 0.3f;
 
-        for (int ku = 2; ku < cloth.N_samples_x(); ++ku) 
+    for (int i = 0; i < parameters.clothesline_poles.size(); i++)
+    {
+        vec3 lineStart = parameters.clothesline[i].first;
+        vec3 lineEnd = parameters.clothesline[i].second;
+        float threshold = 0.1f;
+
+        for (int ku = 0; ku < cloth.N_samples_x(); ++ku) 
         {
             for (int kv = 0; kv < cloth.N_samples_y(); ++kv) 
             {
                 vec3& p = cloth.position(ku, kv);
-                // Calcul distance between p and capsule
-                float distanceToCylinder = DistanceToSegment(p, cylinderStart, cylinderEnd);
+                // Calculate the distance between p and the line
+                float distanceToLine = DistanceToSegment(p, lineStart, lineEnd);
 
-                // If the p is in collision with the capsule
-                if (distanceToCylinder < cylinderRadius) 
+                distanceToLine = std::round(distanceToLine * 100.0f) / 100.0f;
+                // If p is in collision with the line
+                if (distanceToLine < threshold && p.z >= 6.05f) 
                 {
                     // Adjust the position of the point
-                    vec3 correctedPosition = projectPointOntoCapsule(p, cylinderStart, cylinderEnd, cylinderRadius);
+                    vec3 correctedPosition = projectPointOntoCapsule(p, lineStart, lineEnd, threshold);
                     p = correctedPosition;
+                    std::cout << correctedPosition << std::endl;
                 }
             }
         }
-    }
+    }*/   
 }  
 
 
@@ -391,7 +409,7 @@ bool simulation_detect_divergence(cloth_structure const& cloth)
         if (f > 600.0f) // detect strong force magnitude
         {
             std::cout << "\n **** Warning : Strong force magnitude detected " << f << " at vertex " << k << " ****" << std::endl;
-            simulation_diverged = true;
+            simulation_diverged = true; 
         }
 
         if (std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)) // detect NaN in position
