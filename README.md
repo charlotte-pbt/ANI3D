@@ -24,6 +24,7 @@ cmake --build build
 ```
 ./build/projet
 ```
+![Project preview](./projet/assets/projectPreview.png "Project preview")
 
 ## Usage 
 
