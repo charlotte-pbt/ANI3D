@@ -344,7 +344,7 @@ void scene_structure::display_frame()
 		return true;
 	};
 
-	int const N_step = 10; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
+	int const N_step = 5; // Adapt here the number of intermediate simulation steps (ex. 5 intermediate steps per frame)
 	for (int k_step = 0; simulation_running == true && k_step < N_step; ++k_step)
 	{
 		simulation(clothF1, parameters, constraintF1) ? simulation_running = true :  simulation_running = false;
