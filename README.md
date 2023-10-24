@@ -2,6 +2,12 @@
 
 ## About this project 
 
+Cloth and wind simulation :
+
+Several items of clothing are hung on clotheslines, and the wind comes from a fan that can be adjusted in terms of power and position.
+
+## Requirements
+
 - CMake
 - OpenGL
 
